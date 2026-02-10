@@ -19,7 +19,7 @@
 * .NET 8.0 SDK or later
 * Microsoft Edge Browser
 * Gemini API Keys (Google AI Studio)
-* SQLLite
+* SQLite
 
 ### 2. Secrets Configuration
 Create a file named `secrets.txt` in the project root directory. The application expects exactly **4 lines** in the following order:
