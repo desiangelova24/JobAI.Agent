@@ -33,10 +33,16 @@
 ---
 
 ## 🚦 How it Works
-1.  **Initialization:** The system greets the user via voice and checks for `secrets.txt`.
-2.  **Validation:** If the config is missing, it enters a retry loop until the file is created.
-3.  **Operation:** The bot logs into LinkedIn, scrapes jobs, and sends data to Gemini.
-4.  **Quota Handling:** If an API limit is reached, it automatically switches keys and waits for 35 seconds.
+
+The agent follows a structured execution flow to ensure data integrity and security:
+
+1. **Initialization:** The system greets the user via voice alerts and verifies the presence of the `appsettings.json` configuration file.
+2. **Validation:** If the configuration is missing or invalid, the bot enters a smart retry loop, waiting for the user to provide the necessary credentials before proceeding.
+3. **Operation:** * The bot launches the browser and performs a secure LinkedIn login.
+    * It scrapes job postings based on "Remote" and "EUR" salary filters.
+    * Data is sent to the **Gemini AI** engine for deep requirement analysis.
+4. **Quota & Error Handling:** * If an AI API limit is reached, the system automatically cycles through backup keys.
+    * It includes a built-in 35-second cooldown period to respect rate limits and ensure continuous operation.
 
 ---
 ## 🛠️ Troubleshooting & Common Issues
