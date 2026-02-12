@@ -45,6 +45,13 @@ The agent follows a structured execution flow to ensure data integrity and secur
     * It includes a built-in 35-second cooldown period to respect rate limits and ensure continuous operation.
 
 ---
+### 📂 Automatic Environment Setup
+To simplify the first-time setup, the agent features an automated file system manager:
+* **Auto-Configuration:** On the first run, the system automatically generates the necessary `appsettings.json` and `secrets.txt` files if they are missing.
+* **Workspace Management:** All operational and temporary files are organized within a dedicated `temp` folder to keep your project directory clean.
+* **Persistence:** The system ensures that the **SQLite** database and log files are correctly initialized before starting any automation tasks.
+
+---
 ## 🛠️ Troubleshooting & Common Issues
 
 ### 🌐 1. Browser version mismatch
@@ -64,6 +71,14 @@ The agent follows a structured execution flow to ensure data integrity and secur
 **Solution:** This usually happens due to a slow internet connection. The bot is set to wait for 10 seconds for elements to appear. If your connection is slow, try increasing the wait time in `TryAutomaticLogin`.
 
 ---
+
+## 🚀 How to Run
+
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/desiangelova24/JobAI.Agent.git](https://github.com/desiangelova24/JobAI.Agent.git)
+
+
 ## 🛡️ License
 Private project for personal use and remote work career development.
 
