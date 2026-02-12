@@ -1,38 +1,13 @@
-﻿using JobAI.Agent;
+﻿using Google.GenAI;
+using JobAI.Agent;
 using Newtonsoft.Json;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
-using Google.GenAI;
-using System.Linq;
+using System.Text.Json;
+
 public class GeminiClient
 {
-    private string[] _apiKeys;
-    public GeminiClient()
-    {
-        LoadKeys();
-    }
-    private void LoadKeys()
-    {
-        try
-        {
-            if (File.Exists("secrets.txt"))
-            {
-                string[] allLines = File.ReadAllLines("secrets.txt");
-
-                _apiKeys = allLines.Take(2).ToArray();
-
-                Console.WriteLine($"✅ Loaded {_apiKeys.Length} API keys for Gemini.");
-            }
-            else
-            {
-                _apiKeys = new string[] { "" };
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Error loading keys: {ex.Message}");
-        }
-    }
     /// <summary>
     /// Sends the job description to Gemini AI for analysis.
     /// Implements API key rotation and retry logic to handle rate limits and server demand.
@@ -42,13 +17,13 @@ public class GeminiClient
         var model = "gemini-3-flash-preview"; // Core model
         int currentKeyIndex = 0;
         int totalRetries = 0;
-
+        var apiKeys = ConfigValidator.LoadConfigFiles()?.GeminiApiKeys;
         while (totalRetries < 5)
         {
             try
             {
                 // Initialize the AI client with the current active key
-                var client = new Client(apiKey: _apiKeys[currentKeyIndex]);
+                var client = new Client(apiKey: apiKeys[currentKeyIndex]);
                 string fullPrompt = PromptFactory.GetJobAnalysisPrompt(description);
 
                 var response = await client.Models.GenerateContentAsync(model, fullPrompt);
@@ -64,7 +39,7 @@ public class GeminiClient
             }
             catch (Exception ex) when (ex.Message.Contains("quota") || ex.Message.Contains("429"))
             {
-                if (totalRetries >= _apiKeys.Length)
+                if (totalRetries >= apiKeys.Length)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     string fatalMsg = "❌ CRITICAL: All API keys have reached their quota limits.";
@@ -81,7 +56,7 @@ public class GeminiClient
                 }
                 // SWITCH KEY: Handle Rate Limits (Free Tier Quota)
                 currentKeyIndex = (currentKeyIndex + 1) % _apiKeys.Length;
-                Console.WriteLine($"🛑 Quota Limit Reached! Switching to API Key {currentKeyIndex - 1} and waiting...");
+                Console.WriteLine($"🛑 Quota Limit Reached! Switching to API Key {currentKeyIndex + 1} and waiting...");
                 await Task.Delay(35000); // Wait 35 seconds to allow the quota to reset
             }
             catch (Exception ex) when (ex.Message.Contains("high demand"))

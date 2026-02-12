@@ -10,6 +10,8 @@ using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
 using System.Speech.Synthesis;
+using SeleniumExtras.WaitHelpers;
+
 namespace JobAI.Agent
 {
     public class JobScanner
@@ -81,7 +83,7 @@ namespace JobAI.Agent
                     if (!IsUserLoggedIn(driver))
                     {
                         // 1. Attempt automated login
-                        await TryAutomaticLogin(driver);
+                        await LoginWithRetry(driver);
 
                         // 2. Secondary check
                         if (!IsUserLoggedIn(driver))
@@ -147,6 +149,46 @@ namespace JobAI.Agent
             Console.WriteLine("🏁 Program completed! Check your screenshots folder.");
             _voice.Say("finish"); // Voice: "Task completed!"
         }
+        public async Task LoginWithRetry(IWebDriver driver)
+        {
+            int maxAttempts = 2; 
+            int currentAttempt = 0;
+            bool success = false;
+
+            while (currentAttempt < maxAttempts && !success)
+            {
+                try
+                {
+                    currentAttempt++;
+                    await TryAutomaticLogin(driver);
+
+                    if (driver.Url.Contains("feed") || driver.Url.Contains("jobs"))
+                    {
+                        success = true;
+                        Console.WriteLine("✅ Login successful on attempt " + currentAttempt);
+                    }
+                    else
+                    {
+                        throw new Exception("Still on login page.");
+                    }
+                }
+                catch (Exception)
+                {
+                    if (currentAttempt < maxAttempts)
+                    {
+                        Console.WriteLine($"⚠️ Attempt {currentAttempt} failed. Refreshing and retrying...");
+                        driver.Navigate().Refresh();
+                        await Task.Delay(3000);
+                    }
+                    else
+                    {
+                        Console.WriteLine("❌ All login attempts failed.");
+                        _voice.SayMessage("I couldn't log in. Please check if there is a CAPTCHA on the screen.");
+                        EdgeManager.AlertUserForAction("Please complete the login manually.");
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Attempts to perform an automated login using credentials from the secrets file.
         /// Uses randomized delays to mimic human behavior and avoid detection.
@@ -156,48 +198,76 @@ namespace JobAI.Agent
             try
             {
                 Console.WriteLine("🔑 Attempting automatic login...");
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
-                // Load credentials from our protected secrets file
-                string[] secrets = File.ReadAllLines("secrets.txt");
-                if (secrets.Length < 4) // Assuming: API_Key1, API_Key2, Email, Password
+                // 1. Handling the initial 'Sign in' button
+                var signInButtons = driver.FindElements(By.LinkText("Sign in"));
+                if (signInButtons.Count > 0)
                 {
-                    Console.WriteLine("⚠️ Error: Credentials missing in secrets.txt!");
+                    Console.WriteLine("🌐 Clicking the 'Sign in' button...");
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    js.ExecuteScript("arguments[0].click();", signInButtons[0]);
+
+                    wait.Until(ExpectedConditions.ElementIsVisible(By.Id("username")));
+                }
+
+                // 2. Loading credentials
+                var configFile = ConfigValidator.LoadConfigFiles();
+                if (configFile == null)
+                {
+                    Console.WriteLine("⚠️ Error: Credentials missing in configuration!");
                     return;
                 }
 
-                string email = secrets[2];    // The third line in your secrets.txt
-                string password = secrets[3]; // The fourth line in your secrets.txt
-
-                // Locate login elements
-                var emailField = driver.FindElement(By.Id("username"));
-                var passwordField = driver.FindElement(By.Id("password"));
-                var loginButton = driver.FindElement(By.XPath("//button[@type='submit']"));
-
-                // Enter email with a small delay to simulate typing
+                // 3. Entering Email and Password
+                var emailField = wait.Until(ExpectedConditions.ElementIsVisible(By.Id("username")));
                 emailField.Clear();
-                emailField.SendKeys(email);
-                await Task.Delay(_random.Next(500, 1500));
+                emailField.SendKeys(configFile.LinkedInEmail);
 
-                // Enter password
+                var passwordField = driver.FindElement(By.Id("password"));
                 passwordField.Clear();
-                passwordField.SendKeys(password);
-                await Task.Delay(_random.Next(500, 1500));
+                passwordField.SendKeys(configFile.LinkedInPassword);
 
-                // Execute the login click
+                var loginButton = driver.FindElement(By.XPath("//button[@type='submit']"));
                 loginButton.Click();
 
-                Console.WriteLine("⏳ Waiting for post-login redirection...");
+                await Task.Delay(3000);
 
-                // Give the browser time to process the session and cookies
+                // 4. Handling 2FA Challenge (Two-Factor Authentication)
+                if (driver.Url.Contains("/checkpoint/challenge/"))
+                {
+                    Console.WriteLine("🛡️ LinkedIn security: 2FA challenge detected!");
+                    _voice.SayMessage("LinkedIn has sent a verification code. You have two minutes to enter it.");
+                    EdgeManager.AlertUserForAction("Please enter the PIN code in the browser. The program will exit in 2 minutes if no action is taken.");
+
+                    try
+                    {
+                        // Wait up to 2 minutes for the user to enter the PIN and the URL to change
+                        var wait2fa = new WebDriverWait(driver, TimeSpan.FromMinutes(2));
+                        wait2fa.Until(d => !d.Url.Contains("/checkpoint/challenge/"));
+                        Console.WriteLine("✅ 2FA verification successful!");
+                    }
+                    catch (WebDriverTimeoutException)
+                    {
+                        // Action on Timeout
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("⏰ Security timeout: Verification time expired. Closing the browser...");
+                        _voice.SayMessage("Security timeout. Closing the browser.");
+
+                        driver.Quit();
+                        Environment.Exit(0);
+                    }
+                }
+
+                Console.WriteLine("⏳ Waiting for post-login redirection...");
                 await Task.Delay(5000);
+                Console.WriteLine("✅ Login process completed.");
             }
             catch (Exception ex)
             {
-                // Use our Alert helper to notify the user visually and with sound
                 EdgeManager.AlertUserForAction($"Automatic login failed: {ex.Message}");
             }
         }
-      
         private void NotifyPageProcess(IWebDriver driver, int pageNumber)
         {
             string message = $"Processing page {pageNumber}. Taking screenshot.";
