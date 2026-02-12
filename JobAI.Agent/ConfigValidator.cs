@@ -1,10 +1,27 @@
 ﻿using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Text.Json;
 
 namespace JobAI.Agent
 {
     public class ConfigValidator
     {
+        public static bool IsInternetAvailable()
+        {
+            try
+            {
+                using (var ping = new Ping())
+                {
+                    // We check Cloudflare DNS (1.1.1.1) - one of the fastest in the world
+                    var reply = ping.Send("1.1.1.1", 3000);
+                    return reply.Status == IPStatus.Success;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
         public static string ReadPassword()
         {
             string password = "";
