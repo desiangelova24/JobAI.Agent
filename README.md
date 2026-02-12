@@ -32,13 +32,30 @@
 
 ---
 
-## 🚀 How to Run
+## ⚙️ How It Works
 
-1. **Initial Launch:** Run the app once to let it initialize the environment.
-2. **Configure Credentials:** Open the newly created config and enter your API keys.
-3. **Build & Run:**
-   ```bash
-   dotnet run
+The **JobAI Hunter Pro** is designed with a "plug-and-play" architecture, focusing on automation, security, and ease of use.
+
+---
+
+### 📂 1. Automated Infrastructure
+Upon the first launch, the system utilizes a centralized `PathsConfig` engine to:
+* **Generate Workspaces**: Automatically creates a secure `temp` directory and a dedicated database folder (`JobAI-DB`).
+* **Configuration Scaffolding**: Detects if `appsettings.json` is missing and generates a fresh template, ensuring the app never crashes due to missing files.
+
+### 🛡️ 2. Interactive Setup & Security
+To protect your privacy, especially during remote screen-sharing sessions:
+* **Masked Input**: LinkedIn passwords are collected through a secure console buffer that displays asterisks (`****`) instead of plain text.
+* **Validation Layer**: The `ConfigValidator` ensures all entered data (Emails, API Keys) is logically correct before the scanning engine starts.
+
+### 💶 3. Smart Search & Currency (EUR 2026)
+* **Remote-First**: The bot is pre-configured to prioritize "Remote" job tags, perfect for modern flexible work.
+* **Bulgarian Market Ready**: Full support for the **EUR** currency in job salary analysis and database storage.
+
+### ⌨️ 4. Advanced Control (CLI)
+For power users, the app supports command-line arguments to manage the environment quickly:
+* `dotnet run -- -clean`: Resets the entire environment and deletes all local data (temp folder).
+* `dotnet run -- -help` : Displays the interactive help menu with all available commands.
 
 ---
 ## 🚦 How it Works
@@ -80,6 +97,16 @@ To simplify the first-time setup, the agent features an automated file system ma
 **Solution:** This usually happens due to a slow internet connection. The bot is set to wait for 10 seconds for elements to appear. If your connection is slow, try increasing the wait time in `TryAutomaticLogin`.
 
 ---
+
+## 🚀 Future Roadmap
+
+I am constantly working to make **JobAI Hunter Pro** even smarter. Planned features include:
+
+* **📧 Real-time Email Alerts**: Automatically send an email notification as soon as a high-match job is found.
+* **📊 Salary Benchmarking**: Compare found salaries in **EUR** with market averages to help during negotiations.
+* **📄 AI Cover Letter Generator**: Use Gemini AI to draft a tailored cover letter based on the specific job description and your CV.
+* **🌐 Multi-platform Support**: Expand beyond LinkedIn to include platforms like Indeed and remote-specific boards (WeWorkRemotely, RemoteOK).
+
 ## 🛡️ License
 Private project for personal use and remote work career development.
 

@@ -41,15 +41,19 @@ namespace JobAI.Agent
             Console.WriteLine(rocket);
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("=========================================");
-            Console.WriteLine("       JOB-AI HUNTER PRO v1.0.0          ");
+            Console.WriteLine("       JOB-AI HUNTER PRO v1.1.0          ");
             Console.WriteLine("=========================================");
 
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine($"[STATUS]  System Online");
-            Console.WriteLine($"[TARGET]  Remote C# Roles");
-            Console.WriteLine($"[CURRENCY] EUR (Bulgaria 2026)");
-            Console.WriteLine("=========================================");
-            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"[STATUS]   System Online & Secure");
+            Console.ResetColor();
+
+            Console.WriteLine($"[TARGET]   Remote C# / .NET Developer");
+            Console.WriteLine($"[STACK]    Web Technologies (ASP.NET Core / Web API)");
+            Console.WriteLine($"[LOCATION] Bulgaria (Nationwide Remote)");
+            Console.WriteLine($"[CURRENCY] EUR");
+            Console.WriteLine($"[ENGINE]   Gemini AI Analysis Active");
+            Console.WriteLine(new string('-', 50));
 
             Console.ResetColor();
         }

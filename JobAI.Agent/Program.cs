@@ -9,18 +9,33 @@ public class Program
 {
     static async Task Main(string[] args)
     {
+       
         var voice = new VoiceAssistant();
         // Ensure the console can display Cyrillic symbols if any job titles are in Bulgarian
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
         UIHelper.StartClock();
-        Console.Title = "🚀 JobAI Hunter Pro v1.0.0 | Remote Search Mode (EUR)";
+        Console.Title = "🚀 JobAI Hunter Pro v1.1.0 | Remote Search Mode (EUR)"; 
         UIHelper.ShowWelcomeScreen();
         voice.SayMessage("Welcome to Job AI Hunter. Checking configuration...");
         ConfigValidator.CheckSystemRequirements();
         PathsConfig.InitializeWorkspace();
         ConfigValidator.RunFullSetup(voice);
+        bool online = ConfigValidator.IsInternetAvailable();
 
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.Write("[NETWORK]  ");
+        if (online)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Online (Stable)");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Offline (Check Connection)");
+        }
+        Console.ResetColor();
         Console.ForegroundColor = ConsoleColor.Cyan;
         voice.SayMessage("Ready to scan for remote opportunities.");
         Console.ResetColor();
