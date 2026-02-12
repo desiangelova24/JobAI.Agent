@@ -5,7 +5,31 @@ namespace JobAI.Agent
 {
     public class ConfigValidator
     {
-        public const string CONFIG_FILE = "appsettings.json";
+        public static string ReadPassword()
+        {
+            string password = "";
+            ConsoleKeyInfo key;
+
+            do
+            {
+                key = Console.ReadKey(true);
+
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
+                {
+                    password += key.KeyChar;
+                    Console.Write("*");
+                }
+                else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    password = password.Substring(0, (password.Length - 1));
+                    Console.Write("\b \b");
+                }
+            }
+            while (key.Key != ConsoleKey.Enter);
+
+            Console.WriteLine();
+            return password;
+        }
         public static void CheckSystemRequirements()
         {
             Console.WriteLine("🔍 Checking system requirements...");
@@ -32,7 +56,7 @@ namespace JobAI.Agent
         public static AppSettings? LoadConfigFiles() 
         {
             try { 
-                string jsonString = File.ReadAllText(CONFIG_FILE); 
+                string jsonString = File.ReadAllText(PathsConfig.ConfigFileName); 
                 using JsonDocument doc = JsonDocument.Parse(jsonString); 
                 JsonElement root = doc.RootElement;
                 string apiKey = root.GetProperty("Gemini").GetProperty("ApiKeys")[0].GetString() ?? ""; 
@@ -51,21 +75,21 @@ namespace JobAI.Agent
             if (!IsConfigFilePresent())
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"⚠️  Config file '{CONFIG_FILE}' not found! A template will be created.");
+                Console.WriteLine($"⚠️  Config file '{PathsConfig.ConfigFileName}' not found! A template will be created.");
                 Console.ResetColor();
                 return false;
             }
             if (!IsConfigFileValid())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"❌ Config file '{CONFIG_FILE}' is malformed! Please fix the JSON structure.");
+                Console.WriteLine($"❌ Config file '{PathsConfig.ConfigFileName}' is malformed! Please fix the JSON structure.");
                 Console.ResetColor();
                 return false;
             }
             if (!AreConfigFieldsPopulated())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"❌ Config file '{CONFIG_FILE}' contains empty or placeholder fields! Please update it with your credentials.");
+                Console.WriteLine($"❌ Config file '{PathsConfig.ConfigFileName}' contains empty or placeholder fields! Please update it with your credentials.");
                 Console.ResetColor();
                 return false;
             }
@@ -115,7 +139,7 @@ namespace JobAI.Agent
             {
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 string json = JsonSerializer.Serialize(configData, options);
-                File.WriteAllText(CONFIG_FILE, json);
+                File.WriteAllText(PathsConfig.FullConfigPath, json);
 
                 Console.WriteLine("\n✅ Configuration saved successfully!");
             }
@@ -124,7 +148,7 @@ namespace JobAI.Agent
                 Console.WriteLine($"❌ Error saving config: {ex.Message}");
             }
         } 
-        public static bool CreateDefaultConfig(string filePath)
+        private static bool CreateDefaultConfig()
         {
             try
             {
@@ -137,10 +161,10 @@ namespace JobAI.Agent
 
                 string json = JsonSerializer.Serialize(defaultConfig, new JsonSerializerOptions { WriteIndented = true });
 
-                File.WriteAllText(filePath, json);
+                File.WriteAllText(PathsConfig.FullConfigPath, json);
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"✨ Created a new {filePath} template for you!");
+                Console.WriteLine($"✨ Created a new {PathsConfig.ConfigFileName} template for you!");
                 Console.ResetColor();
                 return true;
             }
@@ -160,13 +184,13 @@ namespace JobAI.Agent
         }
         public static bool IsConfigFilePresent()
         {
-            return File.Exists(CONFIG_FILE);
+            return File.Exists(PathsConfig.ConfigFileName);
         }   
         public static bool IsConfigFileValid()
         {
             try
             {
-                string jsonString = File.ReadAllText(CONFIG_FILE);
+                string jsonString = File.ReadAllText(PathsConfig.FullConfigPath);
                 using JsonDocument doc = JsonDocument.Parse(jsonString);
                 JsonElement root = doc.RootElement;
                 if (!root.TryGetProperty("Gemini", out JsonElement gemini) ||
@@ -189,7 +213,7 @@ namespace JobAI.Agent
         {
             try
             {
-                string jsonString = File.ReadAllText(CONFIG_FILE);
+                string jsonString = File.ReadAllText(PathsConfig.FullConfigPath);
                 using JsonDocument doc = JsonDocument.Parse(jsonString);
                 JsonElement root = doc.RootElement;
                 string primaryKey = root.GetProperty("Gemini").GetProperty("ApiKeys")[0].GetString() ?? "";
@@ -227,18 +251,23 @@ namespace JobAI.Agent
 
         internal static void RunFullSetup(VoiceAssistant voice)
         {
-            if (!ConfigValidator.IsConfigFilePresent())
+            if (!ConfigValidator.IsConfigFileValid())
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("❌ ERROR: 'appsettings.json' is not a valid JSON format!");
+                Console.ResetColor();
+                voice.SayMessage("Configuration format is invalid.");
+                voice.SayMessage("Exiting application. Goodbye.");
+                System.Environment.Exit(0);
+            }
+            if (!ConfigValidator.AreConfigFieldsPopulated())
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("⚠️ Configuration file exists but is EMPTY or has placeholders.");
+                Console.WriteLine("👉 Please add your Gemini API keys and LinkedIn credentials.");
+                Console.ResetColor();
                 try
                 {
-                    var created = ConfigValidator.CreateDefaultConfig(CONFIG_FILE);
-                    if (!created)
-                    {
-                        Console.WriteLine($"❌ ERROR: Failed to create default configuration file at '{CONFIG_FILE}'.");
-                        voice.SayMessage("Failed to create configuration file. Please check permissions.");
-                        System.Environment.Exit(0);
-                    }
-                    voice.SayMessage("Settings file created. Please update your credentials. Let's configure your agent for the first time.");
                     string? email = string.Empty;
                     string? apiKey = string.Empty;
 
@@ -259,7 +288,6 @@ namespace JobAI.Agent
                             break;
                         }
                     }
-
                     while (true)
                     {
                         Console.Write("📧 Enter your LinkedIn Email: ");
@@ -279,35 +307,16 @@ namespace JobAI.Agent
                         }
                     }
                     Console.Write("🔒 Enter your LinkedIn Password: ");
-                    string? password = Console.ReadLine()?.Trim();
+                    //string? password = Console.ReadLine()?.Trim();
+                    string password = ReadPassword();
                     ConfigValidator.SaveConfig(apiKey, password, email);
-
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️ Created {CONFIG_FILE}, but couldn't open it automatically.");
+                    voice.SayMessage("Configuration is invalid.");
                     Console.WriteLine($"👉 Please open it manually to enter your keys.");
                 }
-            }
-            if (!ConfigValidator.IsConfigFileValid())
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("❌ ERROR: 'appsettings.json' is not a valid JSON format!");
-                Console.ResetColor();
-                voice.SayMessage("Configuration format is invalid.");
-                voice.SayMessage("Exiting application. Goodbye.");
-                System.Environment.Exit(0);
-            }
-
-            if (!ConfigValidator.AreConfigFieldsPopulated())
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("⚠️ Configuration file exists but is EMPTY or has placeholders.");
-                Console.WriteLine("👉 Please add your Gemini API keys and LinkedIn credentials.");
-                Console.ResetColor();
-
-                UIHelper.OpenGithubInstructions();
-                voice.SayMessage("Configuration is invalid.");
+                //UIHelper.OpenGithubInstructions();
                 return;
             }
         }

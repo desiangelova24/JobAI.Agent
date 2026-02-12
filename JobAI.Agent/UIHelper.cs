@@ -10,6 +10,15 @@ namespace JobAI.Agent
 {
     public static class UIHelper
     {
+        public static void ShowHelp()
+        {
+            Console.WriteLine("\n--- 🤖 JobAI Hunter Pro - Help Menu ---");
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  dotnet run                - Starts the bot normally.");
+            Console.WriteLine("  dotnet run -- -clean      - Deletes the 'temp' folder and resets all settings.");
+            Console.WriteLine("  dotnet run -- -help       - Shows this help message.");
+            Console.WriteLine("----------------------------------------\n");
+        }
         public static void ShowWelcomeScreen()
         {
             Console.Clear();

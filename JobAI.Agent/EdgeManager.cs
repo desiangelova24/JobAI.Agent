@@ -169,16 +169,8 @@ namespace JobAI.Agent
         {
             try
             {
-                string folderPath = @"C:\Temp\JobAI_Screenshots";
-                // DIRECTORY CHECK: Create the folder if it's missing
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                    Console.WriteLine($"📂 Created directory for screenshots: {folderPath}");
-                }
-
                 Screenshot ss = ((ITakesScreenshot)driver).GetScreenshot();
-                string fileName = Path.Combine(folderPath, $"Page_{pageNumber}_{DateTime.Now:HH-mm-ss}.png");
+                string fileName = Path.Combine(PathsConfig.BrowserScreenshotsPath, $"Page_{pageNumber}_{DateTime.Now:HH-mm-ss}.png");
                 ss.SaveAsFile(fileName);
                 Console.WriteLine($"📸 Page {pageNumber} saved to disk.");
             }

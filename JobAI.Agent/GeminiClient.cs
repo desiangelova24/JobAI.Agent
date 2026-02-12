@@ -55,7 +55,7 @@ public class GeminiClient
                     Environment.Exit(0);
                 }
                 // SWITCH KEY: Handle Rate Limits (Free Tier Quota)
-                currentKeyIndex = (currentKeyIndex + 1) % _apiKeys.Length;
+                currentKeyIndex = (currentKeyIndex + 1) % apiKeys.Length;
                 Console.WriteLine($"🛑 Quota Limit Reached! Switching to API Key {currentKeyIndex + 1} and waiting...");
                 await Task.Delay(35000); // Wait 35 seconds to allow the quota to reset
             }

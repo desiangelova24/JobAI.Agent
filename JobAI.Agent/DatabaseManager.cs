@@ -3,21 +3,17 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using System;
+using System.Xml.Linq;
 
 namespace JobAI.Agent
 {
     public class DatabaseManager
     {
-        // The database is stored in C:\Temp to ensure persistent storage across sessions.
-        private readonly string _connectionString = "Data Source=C:\\Temp\\JobAI-DB\\Jobs.db";
-
+        // The database is stored in Temp to ensure persistent storage across sessions.
+        private string _connectionString;
         public DatabaseManager()
         {
-            // 1. Ensure the directory exists before initializing the database.
-            string folderPath = "C:\\Temp\\JobAI-DB";
-            if (!System.IO.Directory.Exists(folderPath))
-                System.IO.Directory.CreateDirectory(folderPath);
-
+            _connectionString = $"Data Source={PathsConfig.DatabaseFile}";
             // 2. Initialize the table with specific fields for AI analysis and job requirements.
             using var connection = new SqliteConnection(_connectionString);
             connection.Execute(@"
@@ -82,7 +78,7 @@ namespace JobAI.Agent
 
             conn.Execute(sql, jobParams);
 
-            Console.WriteLine($"✅ Job saved with full AI analysis in Jobs.db: {title} at {company}");
+            Console.WriteLine($"✅ Job saved with full AI analysis in {PathsConfig.DatabaseName}: {title} at {company}");
         }
     }
 }

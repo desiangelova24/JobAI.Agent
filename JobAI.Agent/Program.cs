@@ -18,7 +18,9 @@ public class Program
         UIHelper.ShowWelcomeScreen();
         voice.SayMessage("Welcome to Job AI Hunter. Checking configuration...");
         ConfigValidator.CheckSystemRequirements();
+        PathsConfig.InitializeWorkspace();
         ConfigValidator.RunFullSetup(voice);
+
         Console.ForegroundColor = ConsoleColor.Cyan;
         voice.SayMessage("Ready to scan for remote opportunities.");
         Console.ResetColor();
@@ -36,6 +38,8 @@ public class Program
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"\n❌ FATAL ERROR: {ex.Message}");
             Console.ResetColor();
+
+            PathsConfig.DeleteWorkspace();
         }
         finally
         {

@@ -32,6 +32,15 @@
 
 ---
 
+## 🚀 How to Run
+
+1. **Initial Launch:** Run the app once to let it initialize the environment.
+2. **Configure Credentials:** Open the newly created config and enter your API keys.
+3. **Build & Run:**
+   ```bash
+   dotnet run
+
+---
 ## 🚦 How it Works
 
 The agent follows a structured execution flow to ensure data integrity and security:
@@ -71,21 +80,6 @@ To simplify the first-time setup, the agent features an automated file system ma
 **Solution:** This usually happens due to a slow internet connection. The bot is set to wait for 10 seconds for elements to appear. If your connection is slow, try increasing the wait time in `TryAutomaticLogin`.
 
 ---
-
-## 🚀 How to Run
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/desiangelova24/JobAI.Agent.git](https://github.com/desiangelova24/JobAI.Agent.git)
-
-2. Initial Launch: Run the app once to let it create the folder structure.
-
-3. Configure Credentials: Open the newly created secrets.txt or appsettings.json and enter your LinkedIn details and API keys.
-
-Build & Run:
-
-dotnet run
-
 ## 🛡️ License
 Private project for personal use and remote work career development.
 

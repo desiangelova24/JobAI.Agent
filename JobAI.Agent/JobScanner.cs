@@ -39,14 +39,6 @@ namespace JobAI.Agent
 
             // BROWSER OPTIONS CONFIGURATION
             var options = new EdgeOptions();
-            string profilePath = @"C:\Temp\JobAI_Profile"; // Persistent profile to stay logged in
-            // DIRECTORY CHECK:
-            // If the profile folder doesn't exist, create it to prevent errors.
-            if (!Directory.Exists(profilePath))
-            {
-                Directory.CreateDirectory(profilePath);
-                Console.WriteLine($"📂 Created new profile directory at: {profilePath}");
-            }
             // HEADLESS MODE (Optional):
             // Uncomment these lines to run the browser in the background without a window.
             // options.AddArgument("--headless=new");
@@ -55,7 +47,7 @@ namespace JobAI.Agent
             // STABILITY SETTINGS:
             // These arguments help prevent crashes and handle memory limits in automated environments.
             options.AddArgument("--remote-debugging-port=9222");
-            options.AddArgument($"user-data-dir={profilePath}");
+            options.AddArgument($"user-data-dir={PathsConfig.BrowserProfile}");
             options.AddArgument("--no-sandbox");
             options.AddArgument("--disable-dev-shm-usage");
 
