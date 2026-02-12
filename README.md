@@ -47,7 +47,7 @@ The agent follows a structured execution flow to ensure data integrity and secur
 ---
 ### 📂 Automatic Environment Setup
 To simplify the first-time setup, the agent features an automated file system manager:
-* **Auto-Configuration:** On the first run, the system automatically generates the necessary `appsettings.json` and `secrets.txt` files if they are missing.
+* **Auto-Configuration:** On the first run, the system automatically generates the necessary `appsettings.json` files if they are missing.
 * **Workspace Management:** All operational and temporary files are organized within a dedicated `temp` folder to keep your project directory clean.
 * **Persistence:** The system ensures that the **SQLite** database and log files are correctly initialized before starting any automation tasks.
 
@@ -78,6 +78,13 @@ To simplify the first-time setup, the agent features an automated file system ma
    ```bash
    git clone [https://github.com/desiangelova24/JobAI.Agent.git](https://github.com/desiangelova24/JobAI.Agent.git)
 
+2. Initial Launch: Run the app once to let it create the folder structure.
+
+3. Configure Credentials: Open the newly created secrets.txt or appsettings.json and enter your LinkedIn details and API keys.
+
+Build & Run:
+
+dotnet run
 
 ## 🛡️ License
 Private project for personal use and remote work career development.
