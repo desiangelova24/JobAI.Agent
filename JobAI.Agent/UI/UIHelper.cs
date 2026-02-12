@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.UI
 {
     public static class UIHelper
     {

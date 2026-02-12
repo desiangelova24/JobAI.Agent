@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using JobAI.Agent.Config;
+using Microsoft.Win32;
 using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.Services
 {
     public class EdgeManager
     {
@@ -63,7 +64,7 @@ namespace JobAI.Agent
             try
             {
                 // 1. Locate the Edge browser executable via the Windows Registry
-                string edgePath = (string)Microsoft.Win32.Registry.GetValue(
+                string edgePath = (string)Registry.GetValue(
                     @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe", "", null);
 
                 if (string.IsNullOrEmpty(edgePath))

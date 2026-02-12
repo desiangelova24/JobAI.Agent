@@ -2,7 +2,7 @@
 using System.IO;
 using System.Speech.Synthesis;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.UI
 {
     public class VoiceAssistant
     {

@@ -1,5 +1,8 @@
 ﻿using Google.GenAI;
-using JobAI.Agent;
+using JobAI.Agent.Config;
+using JobAI.Agent.Core;
+using JobAI.Agent.Models;
+using JobAI.Agent.UI;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Net.Http;

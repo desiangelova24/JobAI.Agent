@@ -1,5 +1,8 @@
 ﻿using Google.GenAI.Types;
 using JobAI.Agent;
+using JobAI.Agent.Config;
+using JobAI.Agent.Services;
+using JobAI.Agent.UI;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;

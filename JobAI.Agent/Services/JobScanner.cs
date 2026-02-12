@@ -11,8 +11,11 @@ using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
 using System.Speech.Synthesis;
 using SeleniumExtras.WaitHelpers;
+using JobAI.Agent.Models;
+using JobAI.Agent.Config;
+using JobAI.Agent.UI;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.Services
 {
     public class JobScanner
     {

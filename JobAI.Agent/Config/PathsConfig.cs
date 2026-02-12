@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.Config
 {
     public static class PathsConfig
     {

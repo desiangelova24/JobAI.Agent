@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.Models
 {
     public class AiResult
     {

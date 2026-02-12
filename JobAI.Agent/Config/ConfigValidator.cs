@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
+﻿using JobAI.Agent.Models;
+using JobAI.Agent.UI;
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Text.Json;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.Config
 {
     public class ConfigValidator
     {
@@ -38,7 +40,7 @@ namespace JobAI.Agent
                 }
                 else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
                 {
-                    password = password.Substring(0, (password.Length - 1));
+                    password = password.Substring(0, password.Length - 1);
                     Console.Write("\b \b");
                 }
             }
@@ -51,7 +53,7 @@ namespace JobAI.Agent
         {
             Console.WriteLine("🔍 Checking system requirements...");
             // Check .NET version
-            var version = System.Environment.Version;
+            var version = Environment.Version;
             if (version.Major < 8)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -63,7 +65,7 @@ namespace JobAI.Agent
                     FileName = "https://dotnet.microsoft.com/download/dotnet/8.0",
                     UseShellExecute = true
                 });
-                System.Environment.Exit(1);
+                Environment.Exit(1);
             }
             else
             {
@@ -268,16 +270,16 @@ namespace JobAI.Agent
 
         internal static void RunFullSetup(VoiceAssistant voice)
         {
-            if (!ConfigValidator.IsConfigFileValid())
+            if (!IsConfigFileValid())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("❌ ERROR: 'appsettings.json' is not a valid JSON format!");
                 Console.ResetColor();
                 voice.SayMessage("Configuration format is invalid.");
                 voice.SayMessage("Exiting application. Goodbye.");
-                System.Environment.Exit(0);
+                Environment.Exit(0);
             }
-            if (!ConfigValidator.AreConfigFieldsPopulated())
+            if (!AreConfigFieldsPopulated())
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("⚠️ Configuration file exists but is EMPTY or has placeholders.");
@@ -326,7 +328,7 @@ namespace JobAI.Agent
                     Console.Write("🔒 Enter your LinkedIn Password: ");
                     //string? password = Console.ReadLine()?.Trim();
                     string password = ReadPassword();
-                    ConfigValidator.SaveConfig(apiKey, password, email);
+                    SaveConfig(apiKey, password, email);
                 }
                 catch (Exception ex)
                 {

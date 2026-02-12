@@ -1,11 +1,13 @@
 ﻿using Dapper;
+using JobAI.Agent.Config;
+using JobAI.Agent.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using System;
 using System.Xml.Linq;
 
-namespace JobAI.Agent
+namespace JobAI.Agent.Services
 {
     public class DatabaseManager
     {
