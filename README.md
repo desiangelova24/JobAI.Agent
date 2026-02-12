@@ -51,13 +51,13 @@
 
 ### 🔑 3. Login Failed (Invalid Credentials)
 **Issue:** Automation stops at the login screen.
-**Solution:** Check your `secrets.txt` or `appsettings.json`. Make sure your email and password are correct and that there are no extra spaces.
+**Solution:** Check your `appsettings.json`. Make sure your email and password are correct and that there are no extra spaces.
 
 ### 🕒 4. Timeout Exceptions
 **Issue:** The program crashes with a "TimeoutException".
 **Solution:** This usually happens due to a slow internet connection. The bot is set to wait for 10 seconds for elements to appear. If your connection is slow, try increasing the wait time in `TryAutomaticLogin`.
----
 
+---
 ## 🛡️ License
 Private project for personal use and remote work career development.
 
