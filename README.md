@@ -1,100 +1,72 @@
-🚀 JobAI Hunter Pro
+# 🚀 JobAI Hunter Pro
 
-Automated Backend Agent for the 2026 Job Market
+**JobAI Hunter Pro** is an automated C# application designed to scan LinkedIn for remote job opportunities, analyze them using Gemini AI, and store the results in a local database.
 
+---
 
+## ✨ Key Features
+* **Automated Scraping:** Uses Selenium with Edge to find relevant job postings.
+* **AI Analysis:** Integrates Google Gemini AI to evaluate job descriptions.
+* **Voice Notifications:** Includes a `VoiceAssistant` that provides real-time audio feedback.
+* **Smart Security:** Validates configuration files and handles API rotation for the Free Tier.
+* **Database Integration:** Saves all leads in a structured format for easy tracking.
+ **Smart Login & 2FA:** Automated LinkedIn authentication with built-in Two-Factor Authentication (2FA) support and a 2-minute security timeout.
+---
 
-JobAI Hunter Pro is an intelligent C# agent designed to automate job search and description analysis. The project is fully optimized for the new economic landscape in Bulgaria (following the EUR adoption on January 1st, 2026) and focuses exclusively on Remote positions.
+## 🛠 Tech Stack
 
+* **Language:** C# (.NET 8/9)
+* **Automation:** Selenium WebDriver (Microsoft Edge)
+* **AI Engine:** Google Gemini API
+* **Database:** SQLite
+* **Configuration:** JSON-based secrets management (`appsettings.json`)
 
+---
 
-✨ Key Features
+## 📦 Core Dependencies (NuGet Packages)
 
-🤖 Smart Login \& 2FA: Automated LinkedIn authentication with built-in Two-Factor Authentication (2FA) support and a 2-minute security timeout.
+* **Selenium.WebDriver:** For browser automation.
+* **Google.GenerativeAI:** For Gemini AI integration.
+* **Newtonsoft.Json:** For robust configuration parsing.
+* **Microsoft.Data.Sqlite:** For efficient local data storage.
 
+---
 
+## 🚦 How it Works
+1.  **Initialization:** The system greets the user via voice and checks for `secrets.txt`.
+2.  **Validation:** If the config is missing, it enters a retry loop until the file is created.
+3.  **Operation:** The bot logs into LinkedIn, scrapes jobs, and sends data to Gemini.
+4.  **Quota Handling:** If an API limit is reached, it automatically switches keys and waits for 35 seconds.
 
-🎯 AI-Powered Analysis: Deep integration with Gemini AI for intelligent parsing of job requirements and skill matching.
+---
+## 🛠️ Troubleshooting & Common Issues
 
+### 🌐 1. Browser version mismatch
+**Issue:** The bot fails to launch or gives a "Driver version" error.
+**Solution:** Ensure your Microsoft Edge is up to date. The `EdgeDriver` should match your browser version. The program is designed to use the latest stable release.
 
+### 🛡️ 2. LinkedIn 2FA Pop-up
+**Issue:** The bot stops and asks for a code.
+**Solution:** This is a security feature. Look at the console log; you will hear a voice alert. You have 120 seconds to manually enter the code from your email before the session terminates for security.
 
-💶 EUR Integration: Full support for salary tracking and conversion in Euro (Standard for Bulgaria since 2026).
+### 🔑 3. Login Failed (Invalid Credentials)
+**Issue:** Automation stops at the login screen.
+**Solution:** Check your `secrets.txt` or `appsettings.json`. Make sure your email and password are correct and that there are no extra spaces.
 
+### 🕒 4. Timeout Exceptions
+**Issue:** The program crashes with a "TimeoutException".
+**Solution:** This usually happens due to a slow internet connection. The bot is set to wait for 10 seconds for elements to appear. If your connection is slow, try increasing the wait time in `TryAutomaticLogin`.
+---
 
+## 🛡️ License
+Private project for personal use and remote work career development.
 
-🏠 Remote-First Focus: Specialized filters for remote work to save time, commuting costs, and office-related expenses.
+## 📌 Current Status
+**Version:** 1.0.0 (Stable Release)
+**Last Update:** February 2026
 
 
+### 📬 Contact & Support
+If you have any questions or suggestions regarding the **JobAI Hunter Pro**, feel free to reach out via GitHub issues or email. 
 
-📊 Robust English Logging: Comprehensive real-time logging in English for tracking every stage of the bot's execution.
-
-
-
-🗄️ Data Management: SQLite integration for persistent storage of application history and job status.
-
-
-
-🛠 Tech Stack
-
-Language: C# (.NET 8/9)
-
-
-
-Automation: Selenium WebDriver (Microsoft Edge)
-
-
-
-AI Engine: Google Gemini API
-
-
-
-Database: SQLite
-
-
-
-Configuration: JSON-based secrets management (appsettings.json)
-
-
-
-\## 📦 Core Dependencies (NuGet Packages)
-
-
-
-To ensure high performance and reliability, this project utilizes the following industry-standard libraries:
-
-
-
-\* \*\*Selenium.WebDriver (v4.x):\*\* For browser automation and handling web elements.
-
-\* \*\*Selenium.Support:\*\* Provides additional utilities like `ExpectedConditions` for robust waits.
-
-\* \*\*Google.GenerativeAI:\*\* The official SDK for integrating the \*\*Gemini AI\*\* engine.
-
-\* \*\*Newtonsoft.Json:\*\* For high-speed JSON parsing of configuration and data files.
-
-\* \*\*Microsoft.Data.Sqlite:\*\* A lightweight ADO.NET provider for the \*\*SQLite\*\* database.
-
-\* \*\*System.Speech:\*\* Powers the voice assistant for real-time audio notifications.
-
-
-
-🚀 How to Run
-
-
-
-1. Clone the repository:
-
-git clone https://github.com/desiangelova24/JobAI.Agent.git
-
-
-
-2\. Configure Credentials: Update appsettings.json or secrets.txt with your LinkedIn credentials and API keys.
-
-
-
-3\. Build \& Run:
-
-
-
-&nbsp;	dotnet run
-
+*Let's automate the future of work together!* 🚀
