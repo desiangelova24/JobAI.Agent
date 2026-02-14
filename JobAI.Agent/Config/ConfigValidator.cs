@@ -8,16 +8,22 @@ namespace JobAI.Agent.Config
 {
     public class ConfigValidator
     {
+        /// <summary>
+        /// Determines whether the system has an active internet connection by attempting to reach a well-known external
+        /// server.
+        /// </summary>
+        /// <remarks>This method performs a network ping to a public DNS server (1.1.1.1) to check
+        /// connectivity. A successful response indicates that the system is likely connected to the internet. Network
+        /// conditions, firewalls, or restricted environments may affect the result.</remarks>
+        /// <returns>true if the system can successfully contact the external server; otherwise, false.</returns>
         public static bool IsInternetAvailable()
         {
             try
             {
-                using (var ping = new Ping())
-                {
-                    // We check Cloudflare DNS (1.1.1.1) - one of the fastest in the world
-                    var reply = ping.Send("1.1.1.1", 3000);
-                    return reply.Status == IPStatus.Success;
-                }
+                using var ping = new Ping();
+                // We check Cloudflare DNS (1.1.1.1) - one of the fastest in the world
+                var reply = ping.Send("1.1.1.1", 3000);
+                return reply.Status == IPStatus.Success;
             }
             catch
             {
@@ -183,7 +189,7 @@ namespace JobAI.Agent.Config
                 File.WriteAllText(PathsConfig.FullConfigPath, json);
 
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"✨ Created a new {PathsConfig.ConfigFileName} template for you!");
+                Console.WriteLine($"✨ Created a new {PathsConfig.FullConfigPath} template for you!");
                 Console.ResetColor();
                 return true;
             }

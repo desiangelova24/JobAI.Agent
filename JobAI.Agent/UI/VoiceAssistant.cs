@@ -13,7 +13,7 @@ namespace JobAI.Agent.UI
             _synth = new SpeechSynthesizer();
 
             // We configure the voice to be Female and English (US/UK) 
-            // to help you practice your listening skills. [cite: 2026-01-14]
+            // to help you practice your listening skills.
             _synth.SelectVoiceByHints(VoiceGender.Female, VoiceAge.Adult);
             _synth.Volume = 100;
             _synth.Rate = 0; // Normal speaking speed
@@ -30,9 +30,9 @@ namespace JobAI.Agent.UI
                 "start" => ("System online. Starting the job search.", "Системата е онлайн. Започвам търсенето на работа."),
                 "page" => ($"Moving to page {value}.", $"Премествам се на страница {value}."),
                 "found" => ($"I found {value} new job opportunities.", $"Намерих {value} нови възможности за работа."),
-                "remote" => ("This is a remote position paying in Euros.", "Това е дистанционна позиция с плащане в евро. [cite: 2026-01-14]"),
+                "remote" => ("This is a remote position paying in Euros.", "Това е дистанционна позиция с плащане в евро."),
                 "error" => ("Attention! Please check for a captcha or security block.", "Внимание! Моля, провери за капча или блокада."),
-                "finish" => ("Task completed. You are one step closer to your remote job!", "Задачата е изпълнена. Една стъпка по-близо си до дистанционната работа! [cite: 2026-01-08]"),
+                "finish" => ("Task completed. You are one step closer to your remote job!", "Задачата е изпълнена. Една стъпка по-близо си до дистанционната работа!"),
                 _ => ("Processing data.", "Обработка на данни.")
             };
 

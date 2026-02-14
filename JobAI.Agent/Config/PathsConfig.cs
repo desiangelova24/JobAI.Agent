@@ -16,6 +16,9 @@ namespace JobAI.Agent.Config
         public static readonly string BrowserScreenshotsPath = Path.Combine(TempFolder, "JobAI_Screenshots");
         public static readonly string LogsFolder = Path.Combine(TempFolder, "Logs");
         public static readonly string ConfigFileName = "appsettings.json";
+        
+        //var linkedInUrl = "https://www.linkedin.com/jobs/search/?keywords=.net%20developer&location=Bulgaria&f_WT=2";
+        public static readonly string Pathurl = "https://www.linkedin.com/jobs/search/?currentJobId=4339025900&distance=25&f_PP=103835801&geoId=105333783&keywords=.NET%20%26%20C%23&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true";   
         public static string FullConfigPath => Path.Combine(TempFolder, ConfigFileName);
         public static string DatabaseName => "jobs_history.db"; 
         public static string DatabaseFile => Path.Combine(DatabaseFolder, DatabaseName);

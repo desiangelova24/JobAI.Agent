@@ -1,11 +1,8 @@
-﻿using Dapper;
+﻿
+using Dapper;
 using JobAI.Agent.Config;
 using JobAI.Agent.Models;
-using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
-using Newtonsoft.Json;
-using System;
-using System.Xml.Linq;
 
 namespace JobAI.Agent.Services
 {
@@ -53,34 +50,36 @@ namespace JobAI.Agent.Services
         /// <summary>
         /// Saves the processed job along with its AI-generated analysis.
         /// </summary>
-        public void SaveToDb(string extId, string title, string company, string desc, AiResult ai)
+        public async Task SaveJobAsync(string extId, string title, string company, string desc, AiResult ai)
         {
-            using var conn = new SqliteConnection(_connectionString);
-
-            // Mapping properties to SQL parameters for safe data insertion.
-            var jobParams = new
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                id = extId,
-                t = title,
-                c = company,
-                d = desc,
-                tech = ai.Technologies,
-                lang = ai.LanguageLevel,
-                mode = ai.WorkMode,
-                salary = ai.SalaryEUR,
-                advice = ai.Advice,
-                date = DateTime.Now
-            };
+                await connection.OpenAsync();
+                var command = connection.CreateCommand();
 
-            string sql = @"INSERT OR IGNORE INTO RemoteJobs 
-              (ExternalId, Title, Company, Description, Technologies, 
-               LanguageLevel, WorkMode, SalaryEUR, AI_Advice, DateSaved) 
-              VALUES 
-              (@id, @t, @c, @d, @tech, @lang, @mode, @salary, @advice, @date)";
+                command.CommandText = @"
+    INSERT INTO RemoteJobs (ExternalId, Title, Company, Description, Technologies, 
+                            LanguageLevel, WorkMode, SalaryEUR, AI_Advice, DateSaved)
+    VALUES (@extId, @title, @company, @desc, @tech, @lang, @mode, @salary, @advice, @date)";
 
-            conn.Execute(sql, jobParams);
+                // Подаваме параметрите (БЕЗ Id, защото то е AUTOINCREMENT)
+                command.Parameters.AddWithValue("@extId", extId); // Това е уникалното ID от сайта
+                command.Parameters.AddWithValue("@title", title);
+                command.Parameters.AddWithValue("@company", company);
+                command.Parameters.AddWithValue("@desc", desc);
+                command.Parameters.AddWithValue("@tech", ai.Technologies);
+                command.Parameters.AddWithValue("@lang", ai.LanguageLevel);
+                command.Parameters.AddWithValue("@mode", ai.WorkMode);
+                command.Parameters.AddWithValue("@salary", ai.SalaryEUR);
+                command.Parameters.AddWithValue("@advice", ai.Advice);
+                command.Parameters.AddWithValue("@date", DateTime.Now);
 
-            Console.WriteLine($"✅ Job saved with full AI analysis in {PathsConfig.DatabaseName}: {title} at {company}");
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+        public async Task<bool> IsAlreadySavedAsync(string extId)
+        {
+            return await Task.Run(() => IsAlreadySaved(extId)); 
         }
     }
 }

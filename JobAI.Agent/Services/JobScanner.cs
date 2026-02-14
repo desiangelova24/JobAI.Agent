@@ -1,32 +1,28 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.Win32;
-using Newtonsoft.Json;
+﻿
+
+using JobAI.Agent.Config;
+using JobAI.Agent.UI;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
-using System.Diagnostics;
-using System.Text;
+using SeleniumExtras.WaitHelpers;
+using System.Collections.ObjectModel;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
-using System.Speech.Synthesis;
-using SeleniumExtras.WaitHelpers;
-using JobAI.Agent.Models;
-using JobAI.Agent.Config;
-using JobAI.Agent.UI;
 
 namespace JobAI.Agent.Services
 {
     public class JobScanner
     {
         private readonly Random _random;
-        private readonly DatabaseManager _db;
         private readonly VoiceAssistant _voice;
-        public JobScanner()
+        private readonly JobProcessor _processor;   
+        public JobScanner(JobProcessor processor, VoiceAssistant voice)
         {
-            _db = new DatabaseManager();
-            _voice = new VoiceAssistant();
-            _random = new();
+            _voice = voice;
+            _random = new Random();
+            _processor = processor;
         }
 
         public async Task Run()
@@ -67,7 +63,8 @@ namespace JobAI.Agent.Services
                 {
                     // NAVIGATION:
                     // Target URL: Remote .NET Developer positions in Bulgaria.
-                    driver.Navigate().GoToUrl("https://www.linkedin.com/jobs/search/?keywords=.net%20developer&location=Bulgaria&f_WT=2");
+                    driver.Navigate().GoToUrl(PathsConfig.Pathurl);
+
 
                     // Wait for elements and handle the cookie consent banner
                     await Task.Delay(3000);
@@ -109,17 +106,18 @@ namespace JobAI.Agent.Services
                         await StartScraping(driver);
 
                         // Attempt to navigate to the next page
-                        hasMorePages = await EdgeManager.TryGoToNextPage(driver);
+                        //hasMorePages = await EdgeManager.TryGoToNextPage(driver);
 
-                        if (hasMorePages)
-                        {
-                            currentPage++;
-                            _voice.Say("page", currentPage); // Voice: "Moving to page X..."
+                        //if (hasMorePages)
+                        //{
+                        //    currentPage++;
+                        //    _voice.Say("page", currentPage); // Voice: "Moving to page X..."
 
-                            // Visual and audio feedback for tracking progress
-                            NotifyPageProcess(driver, currentPage);
-                            Console.WriteLine($"🔄 Page {currentPage} loaded. Continuing scan...");
-                        }
+                        //    // Visual and audio feedback for tracking progress
+                        //    NotifyPageProcess(driver, currentPage);
+                        //    Console.WriteLine($"🔄 Page {currentPage} loaded. Continuing scan...");
+                        //}
+                        break;
                     }
                 }
                 catch (Exception ex)
@@ -271,91 +269,60 @@ namespace JobAI.Agent.Services
 
             Console.WriteLine($"🗣️ Processing page {pageNumber}. Notification sent.");
         }
+  
+      
+        private bool IsUserLoggedIn(IWebDriver driver) => driver.FindElements(By.ClassName("global-nav__me-photo")).Count > 0;
+
         /// <summary>
         /// Orchestrates the scraping process: dynamically loads job cards, 
         /// extracts data, and performs AI analysis for each unique job post.
         /// </summary>
+    
         private async Task StartScraping(IWebDriver driver)
         {
-            Console.WriteLine("🚀 Initiating data extraction for job listings...");
+            Console.WriteLine("🚀 Initiating data extraction...");
             var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
 
             try
             {
-                // 1. LOCATE THE RESULTS PANEL
-                // We look for the scrollable container that holds all the job cards.
-                var resultsPanel = wait.Until(d => d.FindElement(By.XPath(
-                    "//div[contains(@class, 'jobs-search-results-list') or contains(@class, 'scaffold-layout__list')]"
-                )));
-
-                // 2. DYNAMIC LOADING (Lazy Loading Management)
-                // LinkedIn renders cards as you scroll. We must reach our target count before processing.
-                int targetCount = 25;
-                int attempts = 0;
-                var cards = resultsPanel.FindElements(By.ClassName("job-card-container"));
-
-                Console.WriteLine($"✅ Dynamic loading started. Initial cards found: {cards.Count}");
-
-                while (cards.Count < targetCount && attempts < 15)
-                {
-                    attempts++;
-                    if (cards.Count > 0)
-                    {
-                        // Scroll to the last card found so far to trigger the next batch of results
-                        IWebElement lastCard = cards.Last();
-                        ((IJavaScriptExecutor)driver).ExecuteScript(
-                            "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", lastCard);
-                    }
-
-                    // Randomized delay to mimic human scrolling and allow data fetching
-                    await Task.Delay(_random.Next(2000, 3500));
-
-                    // Refresh the list from the results panel
-                    cards = resultsPanel.FindElements(By.ClassName("job-card-container"));
-                    Console.WriteLine($"🔄 Attempt {attempts}: Loaded {cards.Count} of {targetCount}...");
-                }
-
+                var cards = await LoadJobCards(driver, wait);
                 Console.WriteLine($"🚀 Final card count for processing: {cards.Count}");
-
-                // 3. JOB DATA EXTRACTION & AI ANALYSIS
+  
                 foreach (var card in cards)
                 {
-                    try
+                    string extId = card.GetAttribute("data-job-id");
+
+                    var exitsJobId = _processor.CheckIfJobExists(extId);
+                    if (exitsJobId)
                     {
-                        // Retrieve the unique LinkedIn ID to check for duplicates in the database
-                        string extId = card.GetAttribute("data-job-id");
-                        if (_db.IsAlreadySaved(extId)) continue;
-
-                        // Click the card via JavaScript to display job details in the right pane
-                        ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].click();", card);
-
-                        // Wait for the job details pane to load
-                        await Task.Delay(_random.Next(2500, 4000));
-
-                        // Extract job information using precise CSS classes and IDs
-                        string title = driver.FindElement(By.ClassName("job-details-jobs-unified-top-card__job-title")).Text;
-                        string company = driver.FindElement(By.ClassName("job-details-jobs-unified-top-card__company-name")).Text;
-                        string description = driver.FindElement(By.Id("job-details")).Text;
-
-                        // AI ANALYSIS: Pass the description to Gemini for evaluation [cite: 2026-02-07]
-                        var aiClient = new GeminiClient();
-                        AiResult analysis = await aiClient.AnalyzeJob(description);
-
-                        if (analysis == null)
-                        {
-                            Console.WriteLine($"⚠️ AI Analysis returned empty for: {title}");
-                        }
-
-                        // PERSISTENCE: Save to SQLite database with salary converted to EUR [cite: 2026-01-14]
-                        _db.SaveToDb(extId, title, company, description, analysis);
-
-                        Console.WriteLine($"✅ Saved to DB: {title} @ {company} | Score: {analysis?.MatchScore}%");
-                    }
-                    catch (Exception)
-                    {
-                        // If one card fails (e.g., ad or stale element), skip and continue with the next
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"⚠️ Skipping already processed job ID: {extId}");
+                        Console.ResetColor();
                         continue;
                     }
+                    // Click the card via JavaScript to display job details in the right pane
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].click();", card);
+                    // Wait for the job details pane to load
+                    await Task.Delay(_random.Next(2500, 4000));
+
+                    // Extract job information using precise CSS classes and IDs
+                    string title = driver.FindElement(By.ClassName("job-details-jobs-unified-top-card__job-title")).Text;
+                    string company = driver.FindElement(By.ClassName("job-details-jobs-unified-top-card__company-name")).Text;
+                    string description = driver.FindElement(By.Id("job-details")).Text;
+
+                    // 2. CHECK: Is there anything empty or too short
+                    if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("[ERROR] Failed to retrieve data from LinkedIn. Skipping this ad..");
+                        Console.ResetColor();
+                        return;
+                    }
+
+                    await _processor.ProcessJob(extId, title, company, description);
+
+                    // Твоят ограничител (за тест само на 1 обява)
+                    break;
                 }
             }
             catch (Exception ex)
@@ -364,7 +331,49 @@ namespace JobAI.Agent.Services
             }
         }
 
-        private bool IsUserLoggedIn(IWebDriver driver) => driver.FindElements(By.ClassName("global-nav__me-photo")).Count > 0;
+       /// <summary>
+       /// Asynchronously loads job card elements from the search results panel on the current page.    
+       /// </summary>
+       /// <remarks>This method attempts to load up to 25 job card elements by scrolling and waiting for
+       /// them to appear. It may return fewer cards if the page does not contain enough job cards or if loading is
+       /// incomplete after several attempts.</remarks>
+       /// <param name="driver">The web driver instance used to interact with the browser and locate elements.</param>
+       /// <param name="wait">The WebDriverWait instance used to wait for the search results panel to become available.</param>
+       /// <returns>A read-only collection of IWebElement objects representing the loaded job cards. The collection may contain
+       /// fewer than 25 elements if not all cards are available within the allowed attempts.</returns>
+        private async Task<ReadOnlyCollection<IWebElement>> LoadJobCards(IWebDriver driver, WebDriverWait wait)
+        {
+            // 1. LOCATE THE RESULTS PANEL
+            // We look for the scrollable container that holds all the job cards.
+            var resultsPanel = wait.Until(d => d.FindElement(By.XPath(
+                  "//div[contains(@class, 'jobs-search-results-list') or contains(@class, 'scaffold-layout__list')]"
+              )));
 
+            int targetCount = 25;
+            int attempts = 0;
+            var cards = resultsPanel.FindElements(By.ClassName("job-card-container"));
+            Console.WriteLine($"✅ Dynamic loading started. Initial cards found: {cards.Count}");
+
+            while (cards.Count < targetCount && attempts < 15)
+            {
+                attempts++;
+                if (cards.Count > 0)
+                {
+                    // Scroll to the last card found so far to trigger the next batch of results
+                    IWebElement lastCard = cards.Last();
+                    ((IJavaScriptExecutor)driver).ExecuteScript(
+                        "arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", lastCard);
+                }
+
+                // Randomized delay to mimic human scrolling and allow data fetching
+                await Task.Delay(_random.Next(2000, 3500));
+
+                // Refresh the list from the results panel
+                cards = resultsPanel.FindElements(By.ClassName("job-card-container"));
+                Console.WriteLine($"🔄 Attempt {attempts}: Loaded {cards.Count} of {targetCount}...");
+            }
+            Console.WriteLine($"🚀 Final card count for processing: {cards.Count}");
+            return cards;
+        }
     }
 }

@@ -3,6 +3,7 @@ using JobAI.Agent;
 using JobAI.Agent.Config;
 using JobAI.Agent.Services;
 using JobAI.Agent.UI;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -12,14 +13,16 @@ public class Program
 {
     static async Task Main(string[] args)
     {
-       
-        var voice = new VoiceAssistant();
+        var serviceProvider = DependencyInjection.ConfigureServices();
+        var voice = serviceProvider.GetRequiredService<VoiceAssistant>();
+
         // Ensure the console can display Cyrillic symbols if any job titles are in Bulgarian
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
         UIHelper.StartClock();
         Console.Title = "🚀 JobAI Hunter Pro v1.1.0 | Remote Search Mode (EUR)"; 
         UIHelper.ShowWelcomeScreen();
+      
         voice.SayMessage("Welcome to Job AI Hunter. Checking configuration...");
         ConfigValidator.CheckSystemRequirements();
         PathsConfig.InitializeWorkspace();
@@ -45,10 +48,7 @@ public class Program
         Console.WriteLine("📅 System Date: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
         try
         {
-            // Initialize the main engine
-            var agent = new JobScanner();
-
-            // Start the automated scraping process
+            var agent = serviceProvider.GetRequiredService<JobScanner>();
             await agent.Run();
         }
         catch (Exception ex)
