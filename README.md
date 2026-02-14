@@ -37,6 +37,9 @@
 The **JobAI Hunter Pro** is designed with a "plug-and-play" architecture, focusing on automation, security, and ease of use.
 
 ---
+### 📁 Core Logic
+The core business logic is provided as a compiled library (**JobAI.Core.dll**) located in the `/Libs` folder. 
+This ensures the agent can function while keeping the core implementation private.
 
 ### 📂 1. Automated Infrastructure
 Upon the first launch, the system utilizes a centralized `PathsConfig` engine to:
@@ -97,6 +100,7 @@ To simplify the first-time setup, the agent features an automated file system ma
 **Solution:** This usually happens due to a slow internet connection. The bot is set to wait for 10 seconds for elements to appear. If your connection is slow, try increasing the wait time in `TryAutomaticLogin`.
 
 ---
+
 
 ## 🚀 Future Roadmap
 
