@@ -23,10 +23,12 @@ namespace JobAI.Agent.Services
                 Company TEXT,                  -- Company Name
                 Description TEXT,              -- Raw job description for AI re-processing
                 Technologies TEXT,             -- Extracted stack (C#, SQL, Docker...)
-                LanguageLevel TEXT,            -- Required English proficiency [cite: 2026-01-14]
-                WorkMode TEXT,                 -- Remote, Hybrid, or On-site [cite: 2026-01-08]
-                SalaryEUR REAL,                -- Salary converted to EUR [cite: 2026-01-14]
+                LanguageLevel TEXT,            -- Required English proficiency
+                WorkMode TEXT,                 -- Remote, Hybrid, or On-site
+                SalaryEUR REAL,                -- Salary converted to EUR
                 AI_Advice TEXT,                -- Personalized career tip: 'Hey girl...'
+                CompanyOrigin TEXT,            -- 'English' or 'International'
+                JobUrl TEXT,                   -- URL of the job posting for reference    
                 DateSaved DATETIME             -- Timestamp of the scan
             )");
 
@@ -50,31 +52,41 @@ namespace JobAI.Agent.Services
         /// <summary>
         /// Saves the processed job along with its AI-generated analysis.
         /// </summary>
-        public async Task SaveJobAsync(string extId, string title, string company, string desc, AiResult ai)
+        public async Task SaveJobAsync(string extId, string title, string company, string desc, AiResult ai, string jobUrl)
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                var command = connection.CreateCommand();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                                    INSERT INTO RemoteJobs (ExternalId, Title, Company, Description, Technologies, LanguageLevel, WorkMode, SalaryEUR, AI_Advice,CompanyOrigin,JobUrl, DateSaved)
+                                    VALUES (@extId, @title, @company, @desc, @tech, @lang, @mode, @salary, @advice,@companyOrigin,@jobUrl, @date)";
 
-                command.CommandText = @"
-    INSERT INTO RemoteJobs (ExternalId, Title, Company, Description, Technologies, 
-                            LanguageLevel, WorkMode, SalaryEUR, AI_Advice, DateSaved)
-    VALUES (@extId, @title, @company, @desc, @tech, @lang, @mode, @salary, @advice, @date)";
-
-                // Подаваме параметрите (БЕЗ Id, защото то е AUTOINCREMENT)
-                command.Parameters.AddWithValue("@extId", extId); // Това е уникалното ID от сайта
-                command.Parameters.AddWithValue("@title", title);
-                command.Parameters.AddWithValue("@company", company);
-                command.Parameters.AddWithValue("@desc", desc);
-                command.Parameters.AddWithValue("@tech", ai.Technologies);
-                command.Parameters.AddWithValue("@lang", ai.LanguageLevel);
-                command.Parameters.AddWithValue("@mode", ai.WorkMode);
-                command.Parameters.AddWithValue("@salary", ai.SalaryEUR);
-                command.Parameters.AddWithValue("@advice", ai.Advice);
-                command.Parameters.AddWithValue("@date", DateTime.Now);
-
-                await command.ExecuteNonQueryAsync();
+                    command.Parameters.AddWithValue("@extId", extId);
+                    command.Parameters.AddWithValue("@title", title);
+                    command.Parameters.AddWithValue("@company", company);
+                    command.Parameters.AddWithValue("@desc", desc);
+                    command.Parameters.AddWithValue("@tech", ai.Technologies);
+                    command.Parameters.AddWithValue("@lang", ai.LanguageLevel);
+                    command.Parameters.AddWithValue("@mode", ai.WorkMode);
+                    command.Parameters.AddWithValue("@salary", ai.SalaryEUR);
+                    command.Parameters.AddWithValue("@advice", ai.Advice);
+                    command.Parameters.AddWithValue("@companyOrigin", ai.CompanyOrigin);
+                    command.Parameters.AddWithValue("@jobUrl", jobUrl);
+                    command.Parameters.AddWithValue("@date", DateTime.Now);
+                  
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                        Console.WriteLine("✅ Success: Job saved to database.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("❌ Database Error: " + ex.Message);
+                    }
+                }
+               
             }
         }
         public async Task<bool> IsAlreadySavedAsync(string extId)

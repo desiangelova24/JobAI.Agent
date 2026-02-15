@@ -3,12 +3,6 @@ using JobAI.Agent.Models;
 using JobAI.Agent.UI;
 using JobAI.Core;
 using Newtonsoft.Json;
-using OpenQA.Selenium;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JobAI.Agent.Services
 {
@@ -30,46 +24,80 @@ namespace JobAI.Agent.Services
         {
             return _db.IsAlreadySaved(extId);
         }   
-        public async Task ProcessJob(string extId, string title, string company, string description)
+        public async Task ProcessJob(string extId, string title, string company, string description, string jobUrl)
         {
             try
             {
-                var apiKeys = ConfigValidator.LoadConfigFiles()?.GeminiApiKeys;
-                string jsonResult = await _geminiClient.AnalyzeJob(description, apiKeys);
+                // Check if the job has already been processed to avoid duplicates  
+                var aiResult = await GetAiAnalysis(description);
+                if (aiResult == null) return;
 
-                if (string.IsNullOrEmpty(jsonResult)) return;
+                await _db.SaveJobAsync(extId, title, company, description, aiResult, jobUrl);
 
-                var responseContainer = JsonConvert.DeserializeObject<AiResultResponse>(jsonResult);
-                if (responseContainer == null) return;
-                if (!responseContainer.Success)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine($"⚠️ AI analysis failed for {title}: {responseContainer.ErrorType} - {responseContainer.Message}");
-                    Console.ResetColor();
-                    return;
-                }
-                var aiResult = JsonConvert.DeserializeObject<AiResult>(responseContainer.Message);
+                //save log for all findings, not only the good ones, to have a complete history of what was processed
+                SaveLogJobFinding(title, company, aiResult, jobUrl);
 
-                _db.SaveJobAsync(extId, title, company, description, aiResult);
+                Console.WriteLine($"✅ Processed: {title} | Score: {aiResult.MatchScore}%");
 
-                Console.WriteLine($"✅ Saved: {title} | Score: {aiResult?.MatchScore}%");
+                //print all findings in the console, not only the good ones, to have a complete overview of what was analyzed   
                 PrintJobAnalysis(title, company, aiResult);
+
                 if (aiResult.MatchScore > 80)
                 {
-                    _voice.Say($" I found a great ad for {title} at {company}!");
+                    _voice.Say($"I found a great opportunity for {title} at {company}!");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error processing the ad: {ex.Message}");
+                Console.WriteLine($"❌ Critical error in ProcessJob: {ex.Message}");
             }
+        }
+        private async Task<AiResult> GetAiAnalysis(string description)
+        {
+            var apiKeys = ConfigValidator.LoadConfigFiles()?.GeminiApiKeys;
+            string jsonResult = await _geminiClient.AnalyzeJob(description, apiKeys);
+
+            if (string.IsNullOrEmpty(jsonResult)) return null;
+
+            var responseContainer = JsonConvert.DeserializeObject<AiResultResponse>(jsonResult);
+
+            if (responseContainer == null || !responseContainer.Success)
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"⚠️ AI analysis failed: {responseContainer?.Message}");
+                Console.ResetColor();
+                return null;
+            }
+
+            return JsonConvert.DeserializeObject<AiResult>(responseContainer.Message);
+        }
+        private void SaveLogJobFinding(string title, string company, AiResult aiResult, string jobUrl)
+        {
+            try
+            {
+                string logPath = PathsConfig.LogFilePath;
+                string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n" +
+                                  $"💼 POSITION: {title}\n" +
+                                  $"📊 MATCH: {aiResult.MatchScore}% | ORIGIN: {aiResult.CompanyOrigin}\n" +
+                                  $"🔗 LINK: {jobUrl}\n" +
+                                  $"📝 ANALYSIS: {aiResult.Advice}\n" +
+                                  "--------------------------------------------------\n";
+
+                File.AppendAllText(logPath, logEntry);
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"❌ Error saving log entry: {ex.Message}");
+            }
+           
         }
         private void PrintJobAnalysis(string title, string company, AiResult aiResult)
         {
             Console.WriteLine("\n" + new string('═', 60));
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($" 💼 JOB FOUND: {title.ToUpper()}");
-            Console.WriteLine($" 🏢 COMPANY:  {company}");
+            Console.WriteLine($" 🏢 COMPANY:  {company} - " + aiResult.CompanyOrigin);
             Console.ResetColor();
             Console.WriteLine(new string('─', 60));
 

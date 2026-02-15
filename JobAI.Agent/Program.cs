@@ -13,9 +13,10 @@ public class Program
 {
     static async Task Main(string[] args)
     {
+        //PathsConfig.DeleteWorkspace (); // Clean up any previous workspace on startup
         var serviceProvider = DependencyInjection.ConfigureServices();
         var voice = serviceProvider.GetRequiredService<VoiceAssistant>();
-
+      
         // Ensure the console can display Cyrillic symbols if any job titles are in Bulgarian
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 

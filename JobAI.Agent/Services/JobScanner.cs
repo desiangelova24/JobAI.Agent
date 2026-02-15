@@ -1,6 +1,7 @@
 ﻿
 
 using JobAI.Agent.Config;
+using JobAI.Agent.Models;
 using JobAI.Agent.UI;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
@@ -286,7 +287,6 @@ namespace JobAI.Agent.Services
             try
             {
                 var cards = await LoadJobCards(driver, wait);
-                Console.WriteLine($"🚀 Final card count for processing: {cards.Count}");
   
                 foreach (var card in cards)
                 {
@@ -309,7 +309,7 @@ namespace JobAI.Agent.Services
                     string title = driver.FindElement(By.ClassName("job-details-jobs-unified-top-card__job-title")).Text;
                     string company = driver.FindElement(By.ClassName("job-details-jobs-unified-top-card__company-name")).Text;
                     string description = driver.FindElement(By.Id("job-details")).Text;
-
+                
                     // 2. CHECK: Is there anything empty or too short
                     if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description))
                     {
@@ -318,10 +318,24 @@ namespace JobAI.Agent.Services
                         Console.ResetColor();
                         return;
                     }
+                    string jobUrl = "Unknown Link";
+                    try
+                    {
+                        var linkElement = driver.FindElement(By.CssSelector(".jobs-search-results-list__list-item--active a.job-card-list__title, .jobs-search-results-list__list-item--active a"));
+                        jobUrl = linkElement.GetAttribute("href");
 
-                    await _processor.ProcessJob(extId, title, company, description);
+                        if (jobUrl.Contains("?"))
+                        {
+                            jobUrl = jobUrl.Split('?')[0];
+                        }
+                    }
+                    catch
+                    {
+                        jobUrl = driver.Url.Split('?')[0];
+                    }
+                    
+                    await _processor.ProcessJob(extId, title, company, description, jobUrl);
 
-                    // Твоят ограничител (за тест само на 1 обява)
                     break;
                 }
             }

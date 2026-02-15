@@ -25,5 +25,9 @@ namespace JobAI.Agent.Models
 
         // AI's personalized career coaching advice
         public string Advice { get; set; }
+        // Company origin classification: 'English' or 'International'
+        public string CompanyOrigin { get; set; }
+        // The URL of the job posting for reference 
+        public string Joburl { get; set; }  
     }
 }

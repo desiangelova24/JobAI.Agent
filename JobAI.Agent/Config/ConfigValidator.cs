@@ -30,6 +30,32 @@ namespace JobAI.Agent.Config
                 return false;
             }
         }
+        private static string ReadSensitiveInput(string prompt)
+        {
+            Console.Write(prompt);
+            string input = "";
+            ConsoleKey key;
+
+            do
+            {
+                var keyInfo = Console.ReadKey(true); // true означава, че символът няма да се появи в конзолата
+                key = keyInfo.Key;
+
+                if (key == ConsoleKey.Backspace && input.Length > 0)
+                {
+                    input = input.Remove(input.Length - 1);
+                    Console.Write("\b \b"); // Изтрива последната звездичка от екрана
+                }
+                else if (!char.IsControl(keyInfo.KeyChar))
+                {
+                    input += keyInfo.KeyChar;
+                    Console.Write("*"); // Пише звезда вместо истинския символ
+                }
+            } while (key != ConsoleKey.Enter);
+
+            Console.WriteLine(); // Нов ред след натискане на Enter
+            return input;
+        }
         public static string ReadPassword()
         {
             string password = "";
@@ -298,8 +324,9 @@ namespace JobAI.Agent.Config
 
                     while (true)
                     {
-                        Console.Write("🔑 Enter your Gemini API Key: ");
-                        apiKey = Console.ReadLine()?.Trim();
+                        apiKey = ReadSensitiveInput("🔑 Enter your Gemini API Key: ");
+                        //Console.Write("🔑 Enter your Gemini API Key: ");
+                        //apiKey = Console.ReadLine()?.Trim();
 
                         if (string.IsNullOrEmpty(apiKey))
                         {
@@ -315,9 +342,9 @@ namespace JobAI.Agent.Config
                     }
                     while (true)
                     {
-                        Console.Write("📧 Enter your LinkedIn Email: ");
-                        email = Console.ReadLine()?.Trim();
-
+                        email = ReadSensitiveInput("📧 Enter your LinkedIn Email: ");
+                        //Console.Write("📧 Enter your LinkedIn Email: ");
+                        //email = Console.ReadLine()?.Trim();
                         if (IsValidEmail(email))
                         {
                             Console.WriteLine("✅ Email looks good.");
