@@ -123,6 +123,8 @@ Private project for personal use and work career development.
 **Version:** 1.1.0 (Stable Release)
 **Last Update:** February 2026
 
+## 📺 Project Demo
+[Click here to watch the full automated demo video](https://github.com/desiangelova24/JobAI.Agent/raw/refs/heads/master/JobAI.Agent/Video/Job%20AI%20Hunter%20PRO%20-%20Automated%20Intelligence%20Demo.mp4)
 
 ### 📬 Contact & Support
 If you have any questions or suggestions regarding the **JobAI Hunter Pro**, feel free to reach out via GitHub issues or email. 
