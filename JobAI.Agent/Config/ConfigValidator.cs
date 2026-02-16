@@ -107,7 +107,7 @@ namespace JobAI.Agent.Config
         public static AppSettings? LoadConfigFiles() 
         {
             try { 
-                string jsonString = File.ReadAllText(PathsConfig.ConfigFileName); 
+                string jsonString = File.ReadAllText(PathsConfig.FullConfigPath); 
                 using JsonDocument doc = JsonDocument.Parse(jsonString); 
                 JsonElement root = doc.RootElement;
                 string apiKey = root.GetProperty("Gemini").GetProperty("ApiKeys")[0].GetString() ?? ""; 
