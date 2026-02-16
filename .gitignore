@@ -3,7 +3,10 @@
 .vs/
 temp/
 .Services
-JobAI.Core/ 
+JobAI.Core/*.cs
+!JobAI.Core/README.md
+JobAI.Core/bin/
+JobAI.Core/obj/ 
 *.user
 *.suo
 *.cache

@@ -48,8 +48,10 @@ namespace JobAI.Agent.Services
             // These arguments help prevent crashes and handle memory limits in automated environments.
             options.AddArgument("--remote-debugging-port=9222");
             options.AddArgument($"user-data-dir={PathsConfig.BrowserProfile}");
+            options.AddArgument("profile-directory=Default");
             options.AddArgument("--no-sandbox");
             options.AddArgument("--disable-dev-shm-usage");
+            options.AddArgument("--disable-blink-features=AutomationControlled");
 
             // PROCESS CLEANUP:
             // Close existing Edge instances to avoid "Profile in use" errors.
@@ -64,8 +66,8 @@ namespace JobAI.Agent.Services
                 {
                     // NAVIGATION:
                     // Target URL: Remote .NET Developer positions in Bulgaria.
-                    driver.Navigate().GoToUrl(PathsConfig.Pathurl);
-
+                    //driver.Navigate().GoToUrl(PathsConfig.Pathurl);
+                    driver.Navigate().GoToUrl("https://www.linkedin.com/jobs");
 
                     // Wait for elements and handle the cookie consent banner
                     await Task.Delay(3000);
@@ -90,7 +92,7 @@ namespace JobAI.Agent.Services
                             Console.ReadLine();
                         }
                     }
-
+                    driver.Navigate().GoToUrl(PathsConfig.Pathurl);
                     _voice.Say("start"); // Voice notification: "System online..."
 
                     bool hasMorePages = true;
@@ -270,15 +272,29 @@ namespace JobAI.Agent.Services
 
             Console.WriteLine($"🗣️ Processing page {pageNumber}. Notification sent.");
         }
-  
-      
-        private bool IsUserLoggedIn(IWebDriver driver) => driver.FindElements(By.ClassName("global-nav__me-photo")).Count > 0;
 
+
+        //private bool IsUserLoggedIn(IWebDriver driver) => driver.FindElements(By.ClassName("global-nav__me-photo")).Count > 0;
+        private bool IsUserLoggedIn(IWebDriver driver)
+        {
+            try
+            {
+                var homeIcon = driver.FindElements(By.CssSelector("[data-view-name='navigation-homepage']"));
+
+                var navContainer = driver.FindElements(By.ClassName("global-nav__content"));
+
+                return homeIcon.Count > 0 || navContainer.Count > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
         /// <summary>
         /// Orchestrates the scraping process: dynamically loads job cards, 
         /// extracts data, and performs AI analysis for each unique job post.
         /// </summary>
-    
+
         private async Task StartScraping(IWebDriver driver)
         {
             Console.WriteLine("🚀 Initiating data extraction...");
