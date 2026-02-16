@@ -1,6 +1,6 @@
 # 🚀 JobAI Hunter Pro
 
-**JobAI Hunter Pro** is an automated C# application designed to scan LinkedIn for remote job opportunities, analyze them using Gemini AI, and store the results in a local database.
+**JobAI Hunter Pro** is an automated C# application designed to scan LinkedIn for job opportunities, analyze them using Gemini AI, and store the results in a local database.
 
 ---
 
@@ -51,9 +51,12 @@ To protect your privacy, especially during remote screen-sharing sessions:
 * **Masked Input**: LinkedIn passwords are collected through a secure console buffer that displays asterisks (`****`) instead of plain text.
 * **Validation Layer**: The `ConfigValidator` ensures all entered data (Emails, API Keys) is logically correct before the scanning engine starts.
 
-### 💶 3. Smart Search & Currency (EUR 2026)
-* **Remote-First**: The bot is pre-configured to prioritize "Remote" job tags, perfect for modern flexible work.
-* **Bulgarian Market Ready**: Full support for the **EUR** currency in job salary analysis and database storage.
+## 💶 3. Smart Search & Currency
+
+* **Multi-Currency Support:** Automatically detects and converts job salaries between **BGN** and **EUR** using 2026 fixed exchange rates.
+* **Smart Salary Filtering:** Gemini AI analyzes job descriptions to extract "hidden" salary ranges and translates them into a standardized European format.
+* **Remote-First Intelligence:** Specifically targets high-paying remote positions within the Eurozone, calculating the net value based on Bulgarian tax logic.
+* **Future-Proof Logic:** Built-in support for the Euro transition, making the tool ready for the official currency change.
 
 ### ⌨️ 4. Advanced Control (CLI)
 For power users, the app supports command-line arguments to manage the environment quickly:
@@ -65,10 +68,12 @@ For power users, the app supports command-line arguments to manage the environme
 
 The agent follows a structured execution flow to ensure data integrity and security:
 
-1. **Initialization:** The system greets the user via voice alerts and verifies the presence of the `appsettings.json` configuration file.
+1. **Initialization:** 
+* **Environment Check:** Automatically verifies the existence of the `temp` configuration folder.
+* **Auto-Recovery:** If the `temp` folder or required config files are missing, the system prompts for secure setup.
 2. **Validation:** If the configuration is missing or invalid, the bot enters a smart retry loop, waiting for the user to provide the necessary credentials before proceeding.
 3. **Operation:** * The bot launches the browser and performs a secure LinkedIn login.
-    * It scrapes job postings based on "Remote" and "EUR" salary filters.
+    * It scrapes job postings based on ".NET & C#" and "Bulgaria" and "Remote".
     * Data is sent to the **Gemini AI** engine for deep requirement analysis.
 4. **Quota & Error Handling:** * If an AI API limit is reached, the system automatically cycles through backup keys.
     * It includes a built-in 35-second cooldown period to respect rate limits and ensure continuous operation.
@@ -112,10 +117,10 @@ I am constantly working to make **JobAI Hunter Pro** even smarter. Planned featu
 * **🌐 Multi-platform Support**: Expand beyond LinkedIn to include platforms like Indeed and remote-specific boards (WeWorkRemotely, RemoteOK).
 
 ## 🛡️ License
-Private project for personal use and remote work career development.
+Private project for personal use and work career development.
 
 ## 📌 Current Status
-**Version:** 1.0.0 (Stable Release)
+**Version:** 1.1.0 (Stable Release)
 **Last Update:** February 2026
 
 
