@@ -1,0 +1,35 @@
+﻿@model IEnumerable<JobAI.Core.Models.RemoteJob>
+
+@{
+    ViewData["Title"] = "Намерени обяви";
+}
+
+<div class="container mt-4">
+    <h1>@ViewData["Title"]</h1>
+    <hr />
+
+    <div class="row">
+        @foreach (var job in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@job.Title</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@job.Company</h6>
+                        <p class="card-text">
+                            <strong>Локация:</strong> @job.Technologies <br />
+                            <strong>Рейтинг:</strong>
+                           @*  <span class="badge @(job.MatchScore > 70 ? "bg-success" : "bg-warning")">
+                                @job.MatchScore%
+                            </span> *@
+                        </p>
+                        <p class="card-text text-truncate">@job.AI_Advice</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="@job.JobUrl" target="_blank" class="btn btn-outline-primary btn-sm">Виж обявата</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

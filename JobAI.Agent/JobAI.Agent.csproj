@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\JobAI.Data\JobAI.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="JobAI.Core">
       <HintPath>Libs\JobAI.Core.dll</HintPath>
     </Reference>

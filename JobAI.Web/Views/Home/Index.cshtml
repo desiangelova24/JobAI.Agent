@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@* @model IEnumerable<JobAiHunter.Models.JobPost>
+
+<div class="container">
+    <h2>🎯 Намерени обяви от AI Hunter</h2>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Позиция</th>
+                <th>Фирма</th>
+                <th>AI Анализ</th>
+                <th>Рейтинг</th>
+                <th>Линк</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var job in Model)
+            {
+                <tr>
+                    <td>@job.DateFound.ToShortDateString()</td>
+                    <td>@job.Title</td>
+                    <td>@job.Company</td>
+                    <td>@job.AiSummary</td>
+                    <td>
+                        <span class="badge @(job.MatchScore > 80 ? "bg-success" : "bg-warning")">
+                            @job.MatchScore/100
+                        </span>
+                    </td>
+                    <td><a href="@job.Url" target="_blank" class="btn btn-sm btn-primary">Отвори</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div> *@
