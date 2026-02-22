@@ -10,3 +10,6 @@ JobAI.Core/obj/
 *.user
 *.suo
 *.cache
+JobAI.Infrastructure/*.cs
+JobAI.Infrastructure/bin/
+JobAI.Infrastructure/obj/ 
