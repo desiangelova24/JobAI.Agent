@@ -19,8 +19,9 @@ namespace JobAI.Core.Models
         public string Technologies { get; set; }
         public string LanguageLevel { get; set; }
         public string WorkMode { get; set; }
-        public decimal SalaryEUR { get; set; }
-        public string AI_Advice { get; set; }
+        public double SalaryEUR { get; set; }
+        public string Advice { get; set; }
+        public int MatchScore { get; set; }
         public string CompanyOrigin { get; set; }
         public string JobUrl { get; set; }
         public DateTime DateSaved { get; set; } = DateTime.Now;

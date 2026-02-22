@@ -8,6 +8,7 @@ namespace JobAI.Agent.Config
 {
     public class ConfigValidator
     {
+       
         /// <summary>
         /// Determines whether the system has an active internet connection by attempting to reach a well-known external
         /// server.

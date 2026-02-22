@@ -50,5 +50,9 @@ namespace JobAI.Core.Services
             var jobs = await query.ToListAsync();
             return _mapper.Map<List<JobDto>>(jobs);
         }
+        public async Task<bool> JobExistsAsync(string externalId)
+        {
+            return await _repo.ExistsAsync(externalId);
+        }
     }
 }

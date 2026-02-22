@@ -1,6 +1,9 @@
 ﻿using JobAI.Agent.Config;
+using JobAI.Core.Settings;
+using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 using OpenQA.Selenium;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,11 +15,16 @@ namespace JobAI.Agent.Services
 {
     public class EdgeManager
     {
+        private  readonly  SeleniumSettings _settings;
+        public EdgeManager(IOptions<SeleniumSettings> settings)
+        {
+            _settings = settings.Value;
+        }   
         /// <summary>
         /// Performs a progressive scroll on the job results list to trigger lazy loading.
         /// This ensures all job cards are rendered in the DOM before scraping begins.
         /// </summary>
-        public static async Task ScrollResultsList(IWebDriver driver)
+        public async Task ScrollResultsList(IWebDriver driver)
         {
             Console.WriteLine("⏳ Starting 'Senior Scroll' to load job results...");
 
@@ -59,7 +67,7 @@ namespace JobAI.Agent.Services
         /// Ensures the major versions match to prevent Selenium initialization errors.
         /// </summary>
         /// <param name="actualDriverPath">The file path to the downloaded msedgedriver.exe.</param>
-        public static void CheckRealVersionMatch(string actualDriverPath)
+        public void CheckRealVersionMatch(string actualDriverPath)
         {
             try
             {
@@ -100,7 +108,7 @@ namespace JobAI.Agent.Services
             }
         }
       
-        public static void TakeErrorScreenshot(IWebDriver driver, string actionName)
+        public void TakeErrorScreenshot(IWebDriver driver, string actionName)
         {
             try
             {
@@ -119,7 +127,7 @@ namespace JobAI.Agent.Services
         /// </summary>
         /// <param name="driver">The IWebDriver instance.</param>
         /// <returns>True if navigation was successful; false if no more pages are found.</returns>
-        public static async Task<bool> TryGoToNextPage(IWebDriver driver)
+        public async Task<bool> TryGoToNextPage(IWebDriver driver)
         {
             try
             {
@@ -166,12 +174,12 @@ namespace JobAI.Agent.Services
             return false;
         }
       
-        public static void SavePageScreenshot(IWebDriver driver, int pageNumber)
+        public void SavePageScreenshot(IWebDriver driver, int pageNumber, string browserScreenshotsPath)
         {
             try
             {
                 Screenshot ss = ((ITakesScreenshot)driver).GetScreenshot();
-                string fileName = Path.Combine(PathsConfig.BrowserScreenshotsPath, $"Page_{pageNumber}_{DateTime.Now:HH-mm-ss}.png");
+                string fileName = Path.Combine(browserScreenshotsPath, $"Page_{pageNumber}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.png");
                 ss.SaveAsFile(fileName);
                 Console.WriteLine($"📸 Page {pageNumber} saved to disk.");
             }
@@ -181,7 +189,7 @@ namespace JobAI.Agent.Services
         /// Detects and dismisses cookie consent banners to clear the view for scraping.
         /// Supports multiple languages and button types (Reject/Deny).
         /// </summary>
-        public static void HandleCookies(IWebDriver driver)
+        public void HandleCookies(IWebDriver driver)
         {
             try
             {
@@ -221,50 +229,47 @@ namespace JobAI.Agent.Services
         /// Checks for running Microsoft Edge processes and offers to terminate them.
         /// This is necessary to release the user profile lock for Selenium.
         /// </summary>
-        public static void AskToCloseEdge()
+        public void AskToCloseEdge()
         {
             // Search for all active Microsoft Edge processes
             var edgeProcesses = Process.GetProcessesByName("msedge");
-
-            if (edgeProcesses.Length > 0)
+            if (edgeProcesses.Length == 0) return;
+            bool shouldKill;
+            if (System.Diagnostics.Debugger.IsAttached)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.Write($"❓ Active Edge instances detected ({edgeProcesses.Length}). Close them automatically? (Y/N): ");
                 Console.ResetColor();
 
                 string response = Console.ReadLine()?.ToUpper();
-
-                if (response == "Y")
+                shouldKill = (response == "Y");
+            }
+            else
+            {
+                shouldKill = true;
+                Log.Information("System: Auto-closing Edge processes in non-interactive mode...");
+            }
+            if (shouldKill)
+            {
+                foreach (var p in edgeProcesses)
                 {
-                    Console.WriteLine("System: Closing Edge processes...");
-                    foreach (var p in edgeProcesses)
+                    try
                     {
-                        try
-                        {
-                            p.Kill();
-                            // Wait up to 2 seconds for the process to exit cleanly
-                            p.WaitForExit(2000);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Silent catch if a process is already closed or access is denied
-                            Debug.WriteLine($"Could not kill process: {ex.Message}");
-                        }
+                        p.Kill();
+                        p.WaitForExit(2000);
                     }
-                    Console.WriteLine("✅ All Edge processes terminated.");
-                }
-                else
-                {
-                    Console.WriteLine("⚠️ Warning: If Edge remains open, the automation might fail.");
+                    catch { /* Silent catch */ }
                 }
             }
+
+
         }
         /// <summary>
         /// Alerts the user when manual intervention is required.
         /// Triggers a visual console message and an audible beep sequence.
         /// </summary>
         /// <param name="message">The warning message to display.</param>
-        public static void AlertUserForAction(string message)
+        public void AlertUserForAction(string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine($"\n🔔 ACTION REQUIRED: {message}");

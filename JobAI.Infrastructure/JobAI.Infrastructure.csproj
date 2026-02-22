@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Google.GenAI" Version="0.15.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JobAI.Core\JobAI.Core.csproj" />
   </ItemGroup>
 
 </Project>

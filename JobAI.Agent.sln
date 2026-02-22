@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobAI.Data", "JobAI.Data\Jo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobAI.Infrastructure", "JobAI.Infrastructure\JobAI.Infrastructure.csproj", "{0C52A299-E7FE-4EAB-9AEB-E3839EB64BEF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobAI.Logging", "JobAI.Logging\JobAI.Logging.csproj", "{8E7BCF83-9B4E-4260-8418-1D2DD797A88C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{0C52A299-E7FE-4EAB-9AEB-E3839EB64BEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C52A299-E7FE-4EAB-9AEB-E3839EB64BEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C52A299-E7FE-4EAB-9AEB-E3839EB64BEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E7BCF83-9B4E-4260-8418-1D2DD797A88C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E7BCF83-9B4E-4260-8418-1D2DD797A88C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E7BCF83-9B4E-4260-8418-1D2DD797A88C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E7BCF83-9B4E-4260-8418-1D2DD797A88C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -12,7 +12,7 @@ namespace JobAI.Agent.Config
         private static readonly string RootPath = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string TempFolder = Path.Combine(RootPath, "temp");
         public static readonly string BrowserProfile = Path.Combine(TempFolder, "JobAI_Profile");
-        public static readonly string DatabaseFolder = Path.Combine(TempFolder, "JobAI-DB");
+       // public static readonly string DatabaseFolder = Path.Combine(TempFolder, "JobAI-DB");
         public static readonly string BrowserScreenshotsPath = Path.Combine(TempFolder, "JobAI_Screenshots");
         public static readonly string LogsFolder = Path.Combine(TempFolder, "Logs");
         public static readonly string ConfigFileName = "appsettings.json";
@@ -21,7 +21,8 @@ namespace JobAI.Agent.Config
         public static readonly string Pathurl = "https://www.linkedin.com/jobs/search/?currentJobId=4326653728&distance=25&f_PP=103835801&f_WT=2&geoId=105333783&keywords=.NET%20%26%20C%23&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true";   
         public static string FullConfigPath => Path.Combine(TempFolder, ConfigFileName);
         public static string DatabaseName => "jobs_history.db"; 
-        public static string DatabaseFile => Path.Combine(DatabaseFolder, DatabaseName);
+        //public static string DatabaseFile => Path.Combine(DatabaseFolder, DatabaseName);
+        public static string ConnectionString => $"Data Source=.."; 
 
         /// <summary>
         /// 
@@ -31,7 +32,6 @@ namespace JobAI.Agent.Config
             string[] foldersToCreate = {
                             TempFolder,
                             BrowserProfile,
-                            DatabaseFolder,
                             LogsFolder,
                             BrowserScreenshotsPath
              };

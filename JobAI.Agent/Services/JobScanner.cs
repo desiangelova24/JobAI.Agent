@@ -3,6 +3,8 @@
 using JobAI.Agent.Config;
 using JobAI.Agent.Models;
 using JobAI.Agent.UI;
+using JobAI.Core.Settings;
+using Microsoft.Extensions.Options;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
@@ -14,17 +16,15 @@ using WebDriverManager.Helpers;
 
 namespace JobAI.Agent.Services
 {
-    public class JobScanner
+    public class JobScanner(JobProcessor processor, VoiceAssistant voice, IOptions<SeleniumSettings> options,
+        IOptions<LinkedInSettings> linkedInSettings, EdgeManager edgeManager)
     {
-        private readonly Random _random;
-        private readonly VoiceAssistant _voice;
-        private readonly JobProcessor _processor;   
-        public JobScanner(JobProcessor processor, VoiceAssistant voice)
-        {
-            _voice = voice;
-            _random = new Random();
-            _processor = processor;
-        }
+        private readonly Random _random = new();
+        private readonly VoiceAssistant _voice = voice;
+        private readonly JobProcessor _processor = processor;
+        private readonly SeleniumSettings _settings = options.Value;
+        private readonly LinkedInSettings _linkedInSettings = linkedInSettings.Value;
+        private readonly EdgeManager _edgeManager = edgeManager;
 
         public async Task Run()
         {
@@ -35,7 +35,7 @@ namespace JobAI.Agent.Services
             var driverPath = new DriverManager().SetUpDriver(new EdgeConfig(), VersionResolveStrategy.MatchingBrowser);
 
             // Validate versions by passing the path returned by DriverManager
-            EdgeManager.CheckRealVersionMatch(driverPath);
+            _edgeManager.CheckRealVersionMatch(driverPath);
 
             // BROWSER OPTIONS CONFIGURATION
             var options = new EdgeOptions();
@@ -47,18 +47,24 @@ namespace JobAI.Agent.Services
             // STABILITY SETTINGS:
             // These arguments help prevent crashes and handle memory limits in automated environments.
             options.AddArgument("--remote-debugging-port=9222");
-            options.AddArgument($"user-data-dir={PathsConfig.BrowserProfile}");
+            options.AddArgument("--start-maximized");
+            options.AddArgument($"user-data-dir={_settings.BrowserProfile}");
             options.AddArgument("profile-directory=Default");
             options.AddArgument("--no-sandbox");
             options.AddArgument("--disable-dev-shm-usage");
             options.AddArgument("--disable-blink-features=AutomationControlled");
+            //options.AddExcludedArgument("enable-automation");
+            options.AddUserProfilePreference("credentials_enable_service", false);
+            options.AddUserProfilePreference("profile.password_manager_enabled", false);
+            options.AddAdditionalEdgeOption("useAutomationExtension", false);
+            options.AddArgument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edg/122.0.0.0");
 
             // PROCESS CLEANUP:
             // Close existing Edge instances to avoid "Profile in use" errors.
-            EdgeManager.AskToCloseEdge();
+            _edgeManager.AskToCloseEdge();
 
             IWebDriver driver = new EdgeDriver(options);
-            driver.Manage().Window.Maximize();
+            //driver.Manage().Window.Maximize();
 
             try
             {
@@ -71,7 +77,7 @@ namespace JobAI.Agent.Services
 
                     // Wait for elements and handle the cookie consent banner
                     await Task.Delay(3000);
-                    EdgeManager.HandleCookies(driver);
+                    _edgeManager.HandleCookies(driver);
 
                     // LOGIN VERIFICATION:
                     // Check if session is active; if not, attempt automatic or manual login.
@@ -84,15 +90,15 @@ namespace JobAI.Agent.Services
                         if (!IsUserLoggedIn(driver))
                         {
                             // 3. Failure - capture screenshot for debugging (Captcha or UI change)
-                            EdgeManager.TakeErrorScreenshot(driver, "LoginFailed");
+                            _edgeManager.TakeErrorScreenshot(driver, "LoginFailed");
 
                             // 4. Alert user via audio and console
-                            EdgeManager.AlertUserForAction("Automated login failed. Please sign in manually to continue.");
+                            _edgeManager.AlertUserForAction("Automated login failed. Please sign in manually to continue.");
                             Console.WriteLine("⌨️ Waiting for manual login. Press ENTER when finished...");
                             Console.ReadLine();
                         }
                     }
-                    driver.Navigate().GoToUrl(PathsConfig.Pathurl);
+                    driver.Navigate().GoToUrl(_linkedInSettings.SearchUrl);
                     _voice.Say("start"); // Voice notification: "System online..."
 
                     bool hasMorePages = true;
@@ -126,7 +132,7 @@ namespace JobAI.Agent.Services
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Runtime Error: {ex.Message}");
-                    EdgeManager.TakeErrorScreenshot(driver, "Runtime_Error");
+                    _edgeManager.TakeErrorScreenshot(driver, "Runtime_Error");
                 }
             }
             catch (Exception ex)
@@ -180,7 +186,7 @@ namespace JobAI.Agent.Services
                     {
                         Console.WriteLine("❌ All login attempts failed.");
                         _voice.SayMessage("I couldn't log in. Please check if there is a CAPTCHA on the screen.");
-                        EdgeManager.AlertUserForAction("Please complete the login manually.");
+                        _edgeManager.AlertUserForAction("Please complete the login manually.");
                     }
                 }
             }
@@ -208,21 +214,21 @@ namespace JobAI.Agent.Services
                 }
 
                 // 2. Loading credentials
-                var configFile = ConfigValidator.LoadConfigFiles();
-                if (configFile == null)
-                {
-                    Console.WriteLine("⚠️ Error: Credentials missing in configuration!");
-                    return;
-                }
+                //var configFile = _linkedInSettings.LoadConfigFiles();
+                //if (configFile == null)
+                //{
+                //    Console.WriteLine("⚠️ Error: Credentials missing in configuration!");
+                //    return;
+                //}
 
                 // 3. Entering Email and Password
                 var emailField = wait.Until(ExpectedConditions.ElementIsVisible(By.Id("username")));
                 emailField.Clear();
-                emailField.SendKeys(configFile.LinkedInEmail);
+                emailField.SendKeys(_linkedInSettings.Email);
 
                 var passwordField = driver.FindElement(By.Id("password"));
                 passwordField.Clear();
-                passwordField.SendKeys(configFile.LinkedInPassword);
+                passwordField.SendKeys(_linkedInSettings.Password);
 
                 var loginButton = driver.FindElement(By.XPath("//button[@type='submit']"));
                 loginButton.Click();
@@ -234,7 +240,7 @@ namespace JobAI.Agent.Services
                 {
                     Console.WriteLine("🛡️ LinkedIn security: 2FA challenge detected!");
                     _voice.SayMessage("LinkedIn has sent a verification code. You have two minutes to enter it.");
-                    EdgeManager.AlertUserForAction("Please enter the PIN code in the browser. The program will exit in 2 minutes if no action is taken.");
+                    _edgeManager.AlertUserForAction("Please enter the PIN code in the browser. The program will exit in 2 minutes if no action is taken.");
 
                     try
                     {
@@ -261,14 +267,14 @@ namespace JobAI.Agent.Services
             }
             catch (Exception ex)
             {
-                EdgeManager.AlertUserForAction($"Automatic login failed: {ex.Message}");
+                _edgeManager.AlertUserForAction($"Automatic login failed: {ex.Message}");
             }
         }
         private void NotifyPageProcess(IWebDriver driver, int pageNumber)
         {
             string message = $"Processing page {pageNumber}. Taking screenshot.";
             _voice.SayMessage(message);
-            EdgeManager.SavePageScreenshot(driver, pageNumber);
+            _edgeManager.SavePageScreenshot(driver, pageNumber,_settings.BrowserScreenshotsPath);
 
             Console.WriteLine($"🗣️ Processing page {pageNumber}. Notification sent.");
         }
@@ -309,7 +315,7 @@ namespace JobAI.Agent.Services
                     string extId = card.GetAttribute("data-job-id");
 
                     var exitsJobId = _processor.CheckIfJobExists(extId);
-                    if (exitsJobId)
+                    if (await exitsJobId)
                     {
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.WriteLine($"⚠️ Skipping already processed job ID: {extId}");

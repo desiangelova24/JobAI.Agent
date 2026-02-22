@@ -2,27 +2,34 @@
 using JobAI.Agent.Models;
 using JobAI.Agent.UI;
 using JobAI.Core;
+using JobAI.Core.Models;
+using JobAI.Core.Services;
+using JobAI.Core.Settings;
+using JobAI.Infrastructure;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using OpenQA.Selenium;
 
 namespace JobAI.Agent.Services
 {
     public class JobProcessor
     {
         private readonly GeminiClient _geminiClient;
-        private readonly DatabaseManager _db;
+        private readonly JobService _service;
         private readonly VoiceAssistant _voice;
         private readonly Random _random;
-
-        public JobProcessor(GeminiClient geminiClient, DatabaseManager db, VoiceAssistant voice)
+        private readonly SeleniumSettings _settings;
+        public JobProcessor(GeminiClient geminiClient, JobService db, VoiceAssistant voice, IOptions<SeleniumSettings> options)
         {
             _geminiClient = geminiClient;
-            _db = db;
+            _service = db;
             _voice = voice;
             _random = new();
+            _settings = options.Value;  
         }
-        public bool CheckIfJobExists(string extId)
+        public async Task<bool> CheckIfJobExists(string extId)
         {
-            return _db.IsAlreadySaved(extId);
+            return await _service.JobExistsAsync(extId);
         }   
         public async Task ProcessJob(string extId, string title, string company, string description, string jobUrl)
         {
@@ -32,7 +39,22 @@ namespace JobAI.Agent.Services
                 var aiResult = await GetAiAnalysis(description);
                 if (aiResult == null) return;
 
-                await _db.SaveJobAsync(extId, title, company, description, aiResult, jobUrl);
+                var remoteJob = new RemoteJob
+                {
+                    ExternalId = extId,
+                    Title = title,
+                    Company = company,
+                    Description = description,
+                    JobUrl = jobUrl,
+                    MatchScore = aiResult.MatchScore,
+                    Technologies = aiResult.Technologies,
+                    WorkMode = aiResult.WorkMode,
+                    LanguageLevel = aiResult.LanguageLevel,
+                    SalaryEUR = aiResult.SalaryEUR,
+                    Advice = aiResult.Advice,
+                    CompanyOrigin = aiResult.CompanyOrigin
+                };  
+                await _service.ProcessAndSaveJob(remoteJob);
 
                 //save log for all findings, not only the good ones, to have a complete history of what was processed
                 SaveLogJobFinding(title, company, aiResult, jobUrl);
@@ -54,8 +76,7 @@ namespace JobAI.Agent.Services
         }
         private async Task<AiResult> GetAiAnalysis(string description)
         {
-            var apiKeys = ConfigValidator.LoadConfigFiles()?.GeminiApiKeys;
-            string jsonResult = await _geminiClient.AnalyzeJob(description, apiKeys);
+            string jsonResult = await _geminiClient.AnalyzeJob(description);
 
             if (string.IsNullOrEmpty(jsonResult)) return null;
 
@@ -75,7 +96,7 @@ namespace JobAI.Agent.Services
         {
             try
             {
-                string logPath = PathsConfig.LogFilePath;
+                string logPath = _settings.LogsFolder;
                 string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n" +
                                   $"💼 POSITION: {title}\n" +
                                   $"📊 MATCH: {aiResult.MatchScore}% | ORIGIN: {aiResult.CompanyOrigin}\n" +

@@ -12,4 +12,6 @@ JobAI.Core/obj/
 *.cache
 JobAI.Infrastructure/*.cs
 JobAI.Infrastructure/bin/
-JobAI.Infrastructure/obj/ 
+JobAI.Infrastructure/obj/
+logs
+appsettings.Development.json

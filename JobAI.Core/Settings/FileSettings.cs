@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JobAI.Core.Interfaces
+namespace JobAI.Core.Settings
 {
-    public interface IGeminiClient
+    public class FileSettings
     {
-        Task<string> AnalyzeJob(string description);
+        public string LogsFolder { get; set; } = "logs";
     }
 }

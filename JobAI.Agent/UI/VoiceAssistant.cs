@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JobAI.Core.Settings;
+using Microsoft.Extensions.Options;
+using System;
 using System.IO;
 using System.Speech.Synthesis;
 
@@ -7,11 +9,11 @@ namespace JobAI.Agent.UI
     public class VoiceAssistant
     {
         private readonly SpeechSynthesizer _synth;
-
-        public VoiceAssistant()
+        private readonly SeleniumSettings _settings;
+        public VoiceAssistant(IOptions<SeleniumSettings> settings)
         {
             _synth = new SpeechSynthesizer();
-
+            _settings = settings.Value;
             // We configure the voice to be Female and English (US/UK) 
             // to help you practice your listening skills.
             _synth.SelectVoiceByHints(VoiceGender.Female, VoiceAge.Adult);
@@ -25,6 +27,10 @@ namespace JobAI.Agent.UI
         /// </summary>
         public void Say(string situation, int value = 0)
         {
+            if (!_settings.IsVoiceEnabled)
+            {
+                return;
+            }
             (string english, string bulgarian) = situation.ToLower() switch
             {
                 "start" => ("System online. Starting the job search.", "Системата е онлайн. Започвам търсенето на работа."),
@@ -49,6 +55,10 @@ namespace JobAI.Agent.UI
         /// </summary>
         public void SayMessage(string message)
         {
+            if (!_settings.IsVoiceEnabled)
+            {
+                return; 
+            }
             Console.WriteLine($"🗣️ Assistant: {message}");
             _synth.Speak(message);
         }
