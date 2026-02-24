@@ -80,18 +80,38 @@ To run this project locally, you must provide your own configuration settings.
 
 2. **Add the following configuration:**
 
-  ```json
-
-  {
-
-  "GeminiSettings": {
-
-  "ApiKey": "YOUR_GEMINI_API_KEY_HERE"
-
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "",
+    "ApplicationInsights": "InstrumentationKey=..."
   },
-
-  "ConnectionStrings":
-
+  "Gemini": {
+    "ApiKeys": [
+      "",
+      ""
+    ]
+  },
+  "Settings": {
+    "Currency": "EUR",
+    "MaxApplicationsPerDay": 10
+  },
+  "SeleniumSettings": {
+    "TempFolder": "./temp",
+    "BrowserProfile": "./temp/JobAI_Profile",
+    "BrowserScreenshotsPath": "./temp/JobAI_Screenshots",
+    "LogsFolder": "./temp/Logs",
+    "ChromeDriverPath": "C:\\WebDrivers\\chromedriver.exe",
+    "IsVoiceEnabled": false,
+    "Headless":  false
+  },
+  "LinkedInSettings": {
+    "Email": "",
+    "Password": "",
+    "SearchUrl": "https://www.linkedin.com/jobs/search/?currentJobId=4326653728&distance=25&f_PP=103835801&f_WT=2&geoId=105333783&keywords=.NET%20%26%20C%23&origin=JOB_SEARCH_PAGE_JOB_FILTER"
+  }
+}
+```
 3. **Dependencies:**
 
 Ensure that the private assembly JobAI.Infrastructure.dll is placed in the /Libs folder of the main project.
