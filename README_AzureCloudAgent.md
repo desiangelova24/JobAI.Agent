@@ -126,8 +126,6 @@ To ensure high performance and reliability, the following enterprise-grade libra
 
   * **WebDriverManager:** Automatically manages the lifecycle and versioning of the Edge driver.
 
-* **
-
 ### 🚀 Future Roadmap (Next Steps)
 
 Azure Integration: Move the local SQLite database to Azure SQL Database and deploy the agent as an Azure WebJob or Azure Function.
