@@ -15,4 +15,5 @@ JobAI.Infrastructure/bin/
 JobAI.Infrastructure/obj/
 logs
 appsettings.Development.json
-Config/ConfigValidator.cs
+JobAI.Agent/Config/ConfigValidator.cs
+JobAI.Agent/Config/PathsConfig.cs

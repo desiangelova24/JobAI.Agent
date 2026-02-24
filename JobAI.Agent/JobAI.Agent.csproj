@@ -17,8 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Config\ConfigValidator.cs" />
-    <Compile Remove="Config\PathsConfig.cs" />
     <Compile Remove="Services\DatabaseManager.cs" />
   </ItemGroup>
 

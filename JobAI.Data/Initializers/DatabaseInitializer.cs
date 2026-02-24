@@ -22,7 +22,7 @@ namespace JobAI.Data.Initializers
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "❌ [DatabaseInitializer] Error preparing database!");
+                Log.Fatal("❌ [DatabaseInitializer] Error preparing database: {Message}", ex.Message);
                 throw;
             }
         }
