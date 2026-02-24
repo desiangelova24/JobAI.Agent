@@ -1,6 +1,16 @@
 # JobAI - AzureCloudAgent 🚀
 
-**AzureCloudAgent** is a sophisticated, automated assistant designed to streamline the job search and application process. By combining **web automation** (Selenium) with **Generative AI** (Google Gemini), it discovers job postings, parses their requirements, and analyzes them against a specific professional profile.
+**AzureCloudAgent** is a specialized automation tool designed to discover and analyze specific job opportunities on LinkedIn. The agent is currently pre-configured to target .NET and C# developer roles located in Sofia, Bulgaria.
+
+By leveraging Selenium for targeted scraping and Google Gemini AI for semantic evaluation, it identifies the most relevant positions and assesses how well they match the user's professional skill set.
+
+
+## 🔍 Search Parameters
+To ensure high-quality results, the agent uses the following automated filters:
+* **Keywords:** `.NET`, `C#`
+* **Location:** `Sofia, Bulgaria` (including Remote options)
+* **Platform:** LinkedIn
+* **AI Analysis:** Evaluation of job requirements against a .NET Developer profile.
 
 ## 🌟 Key Features
 
